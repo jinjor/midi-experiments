@@ -1,8 +1,6 @@
-module MidiRenderer exposing (..)
+module Midi exposing (Midi, Track, Note, fromSmf)
 
 import Dict exposing (Dict)
-import Html exposing (..)
-import Html.Attributes exposing (..)
 import SmfDecoder as Smf exposing (Smf, MidiEvent(..))
 
 
@@ -27,56 +25,6 @@ type alias Note =
 emptyTrack : Track
 emptyTrack =
   Track "" []
-
-
-renderSmf : Smf -> Html msg
-renderSmf smf =
-  fromSmf smf
-    |> renderMidi
-
-
-renderMidi : Midi -> Html msg
-renderMidi midi =
-  midi.tracks
-    |> List.map renderTrack
-    |> div []
-
-
-renderTrack : Track -> Html msg
-renderTrack track =
-  track.notes
-    |> List.map renderNote
-    |> div [ style trackStyle ]
-
-
-trackStyle : List (String, String)
-trackStyle =
-  [ ("position", "relative")
-  , ("background-color", "black")
-  , ("height", "60px")
-  , ("margin-bottom", "2px")
-  ]
-
-
-renderNote : Note -> Html msg
-renderNote note =
-  div [ style (noteStyle note) ] []
-
-
-noteStyle : Note -> List (String, String)
-noteStyle note =
-  [ ("position", "absolute")
-  , ("left", px <| note.position // 100)
-  , ("top", px <| 60 - (note.note - 30) )
-  , ("height", "1px")
-  , ("width", px <| note.length // 100)
-  , ("background-color", "pink")
-  ]
-
-
-px : a -> String
-px num =
-  toString num ++ "px"
 
 
 fromSmf : Smf -> Midi

@@ -5274,6 +5274,219 @@ var _elm_lang$core$Dict$diff = F2(
 			t1,
 			t2);
 	});
+//import Native.Scheduler //
+
+var _elm_lang$core$Native_Time = function() {
+
+var now = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+{
+	callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
+});
+
+function setInterval_(interval, task)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var id = setInterval(function() {
+			_elm_lang$core$Native_Scheduler.rawSpawn(task);
+		}, interval);
+
+		return function() { clearInterval(id); };
+	});
+}
+
+return {
+	now: now,
+	setInterval_: F2(setInterval_)
+};
+
+}();var _elm_lang$core$Time$setInterval = _elm_lang$core$Native_Time.setInterval_;
+var _elm_lang$core$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		var _p0 = intervals;
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Task$succeed(processes);
+		} else {
+			var _p1 = _p0._0;
+			var spawnRest = function (id) {
+				return A3(
+					_elm_lang$core$Time$spawnHelp,
+					router,
+					_p0._1,
+					A3(_elm_lang$core$Dict$insert, _p1, id, processes));
+			};
+			var spawnTimer = _elm_lang$core$Native_Scheduler.spawn(
+				A2(
+					_elm_lang$core$Time$setInterval,
+					_p1,
+					A2(_elm_lang$core$Platform$sendToSelf, router, _p1)));
+			return A2(_elm_lang$core$Task$andThen, spawnRest, spawnTimer);
+		}
+	});
+var _elm_lang$core$Time$addMySub = F2(
+	function (_p2, state) {
+		var _p3 = _p2;
+		var _p6 = _p3._1;
+		var _p5 = _p3._0;
+		var _p4 = A2(_elm_lang$core$Dict$get, _p5, state);
+		if (_p4.ctor === 'Nothing') {
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
+				{
+					ctor: '::',
+					_0: _p6,
+					_1: {ctor: '[]'}
+				},
+				state);
+		} else {
+			return A3(
+				_elm_lang$core$Dict$insert,
+				_p5,
+				{ctor: '::', _0: _p6, _1: _p4._0},
+				state);
+		}
+	});
+var _elm_lang$core$Time$inMilliseconds = function (t) {
+	return t;
+};
+var _elm_lang$core$Time$millisecond = 1;
+var _elm_lang$core$Time$second = 1000 * _elm_lang$core$Time$millisecond;
+var _elm_lang$core$Time$minute = 60 * _elm_lang$core$Time$second;
+var _elm_lang$core$Time$hour = 60 * _elm_lang$core$Time$minute;
+var _elm_lang$core$Time$inHours = function (t) {
+	return t / _elm_lang$core$Time$hour;
+};
+var _elm_lang$core$Time$inMinutes = function (t) {
+	return t / _elm_lang$core$Time$minute;
+};
+var _elm_lang$core$Time$inSeconds = function (t) {
+	return t / _elm_lang$core$Time$second;
+};
+var _elm_lang$core$Time$now = _elm_lang$core$Native_Time.now;
+var _elm_lang$core$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _p7 = A2(_elm_lang$core$Dict$get, interval, state.taggers);
+		if (_p7.ctor === 'Nothing') {
+			return _elm_lang$core$Task$succeed(state);
+		} else {
+			var tellTaggers = function (time) {
+				return _elm_lang$core$Task$sequence(
+					A2(
+						_elm_lang$core$List$map,
+						function (tagger) {
+							return A2(
+								_elm_lang$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						_p7._0));
+			};
+			return A2(
+				_elm_lang$core$Task$andThen,
+				function (_p8) {
+					return _elm_lang$core$Task$succeed(state);
+				},
+				A2(_elm_lang$core$Task$andThen, tellTaggers, _elm_lang$core$Time$now));
+		}
+	});
+var _elm_lang$core$Time$subscription = _elm_lang$core$Native_Platform.leaf('Time');
+var _elm_lang$core$Time$State = F2(
+	function (a, b) {
+		return {taggers: a, processes: b};
+	});
+var _elm_lang$core$Time$init = _elm_lang$core$Task$succeed(
+	A2(_elm_lang$core$Time$State, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty));
+var _elm_lang$core$Time$onEffects = F3(
+	function (router, subs, _p9) {
+		var _p10 = _p9;
+		var rightStep = F3(
+			function (_p12, id, _p11) {
+				var _p13 = _p11;
+				return {
+					ctor: '_Tuple3',
+					_0: _p13._0,
+					_1: _p13._1,
+					_2: A2(
+						_elm_lang$core$Task$andThen,
+						function (_p14) {
+							return _p13._2;
+						},
+						_elm_lang$core$Native_Scheduler.kill(id))
+				};
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _p15) {
+				var _p16 = _p15;
+				return {
+					ctor: '_Tuple3',
+					_0: _p16._0,
+					_1: A3(_elm_lang$core$Dict$insert, interval, id, _p16._1),
+					_2: _p16._2
+				};
+			});
+		var leftStep = F3(
+			function (interval, taggers, _p17) {
+				var _p18 = _p17;
+				return {
+					ctor: '_Tuple3',
+					_0: {ctor: '::', _0: interval, _1: _p18._0},
+					_1: _p18._1,
+					_2: _p18._2
+				};
+			});
+		var newTaggers = A3(_elm_lang$core$List$foldl, _elm_lang$core$Time$addMySub, _elm_lang$core$Dict$empty, subs);
+		var _p19 = A6(
+			_elm_lang$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			_p10.processes,
+			{
+				ctor: '_Tuple3',
+				_0: {ctor: '[]'},
+				_1: _elm_lang$core$Dict$empty,
+				_2: _elm_lang$core$Task$succeed(
+					{ctor: '_Tuple0'})
+			});
+		var spawnList = _p19._0;
+		var existingDict = _p19._1;
+		var killTask = _p19._2;
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (newProcesses) {
+				return _elm_lang$core$Task$succeed(
+					A2(_elm_lang$core$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				_elm_lang$core$Task$andThen,
+				function (_p20) {
+					return A3(_elm_lang$core$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
+var _elm_lang$core$Time$Every = F2(
+	function (a, b) {
+		return {ctor: 'Every', _0: a, _1: b};
+	});
+var _elm_lang$core$Time$every = F2(
+	function (interval, tagger) {
+		return _elm_lang$core$Time$subscription(
+			A2(_elm_lang$core$Time$Every, interval, tagger));
+	});
+var _elm_lang$core$Time$subMap = F2(
+	function (f, _p21) {
+		var _p22 = _p21;
+		return A2(
+			_elm_lang$core$Time$Every,
+			_p22._0,
+			function (_p23) {
+				return f(
+					_p22._1(_p23));
+			});
+	});
+_elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
 var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
 var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 //import Maybe, Native.Array, Native.List, Native.Utils, Result //
@@ -9819,111 +10032,22 @@ var _user$project$SmfDecoder$smf = A2(
 				header.length + 8,
 				A2(_user$project$BinaryDecoder$repeat, header.trackNumber, _user$project$SmfDecoder$track)));
 	});
-var _user$project$MidiRenderer$px = function (num) {
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(num),
-		'px');
-};
-var _user$project$MidiRenderer$noteStyle = function (note) {
-	return {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
-		_1: {
-			ctor: '::',
-			_0: {
-				ctor: '_Tuple2',
-				_0: 'left',
-				_1: _user$project$MidiRenderer$px((note.position / 100) | 0)
-			},
-			_1: {
-				ctor: '::',
-				_0: {
-					ctor: '_Tuple2',
-					_0: 'top',
-					_1: _user$project$MidiRenderer$px(60 - (note.note - 30))
-				},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'height', _1: '1px'},
-					_1: {
-						ctor: '::',
-						_0: {
-							ctor: '_Tuple2',
-							_0: 'width',
-							_1: _user$project$MidiRenderer$px((note.length / 100) | 0)
-						},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'pink'},
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}
-		}
-	};
-};
-var _user$project$MidiRenderer$renderNote = function (note) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$style(
-				_user$project$MidiRenderer$noteStyle(note)),
-			_1: {ctor: '[]'}
-		},
-		{ctor: '[]'});
-};
-var _user$project$MidiRenderer$trackStyle = {
-	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
-	_1: {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'height', _1: '60px'},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '2px'},
-				_1: {ctor: '[]'}
-			}
-		}
-	}
-};
-var _user$project$MidiRenderer$renderTrack = function (track) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiRenderer$trackStyle),
-			_1: {ctor: '[]'}
-		},
-		A2(_elm_lang$core$List$map, _user$project$MidiRenderer$renderNote, track.notes));
-};
-var _user$project$MidiRenderer$renderMidi = function (midi) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		A2(_elm_lang$core$List$map, _user$project$MidiRenderer$renderTrack, midi.tracks));
-};
-var _user$project$MidiRenderer$Midi = function (a) {
+var _user$project$Midi$Midi = function (a) {
 	return {tracks: a};
 };
-var _user$project$MidiRenderer$Track = F2(
+var _user$project$Midi$Track = F2(
 	function (a, b) {
 		return {name: a, notes: b};
 	});
-var _user$project$MidiRenderer$emptyTrack = A2(
-	_user$project$MidiRenderer$Track,
+var _user$project$Midi$emptyTrack = A2(
+	_user$project$Midi$Track,
 	'',
 	{ctor: '[]'});
-var _user$project$MidiRenderer$Note = F3(
+var _user$project$Midi$Note = F3(
 	function (a, b, c) {
 		return {position: a, note: b, length: c};
 	});
-var _user$project$MidiRenderer$updateTrack = F2(
+var _user$project$Midi$updateTrack = F2(
 	function (_p1, _p0) {
 		var _p2 = _p1;
 		var _p11 = _p2._0;
@@ -9962,7 +10086,7 @@ var _user$project$MidiRenderer$updateTrack = F2(
 											var _p7 = _p6._0;
 											return {
 												ctor: '::',
-												_0: A3(_user$project$MidiRenderer$Note, _p7, _p8, (_p10 + _p11) - _p7),
+												_0: A3(_user$project$Midi$Note, _p7, _p8, (_p10 + _p11) - _p7),
 												_1: _p9.notes
 											};
 										},
@@ -9974,17 +10098,17 @@ var _user$project$MidiRenderer$updateTrack = F2(
 			}()
 		};
 	});
-var _user$project$MidiRenderer$Context = F2(
+var _user$project$Midi$Context = F2(
 	function (a, b) {
 		return {temporaryNotes: a, notes: b};
 	});
-var _user$project$MidiRenderer$initContext = A2(
-	_user$project$MidiRenderer$Context,
+var _user$project$Midi$initContext = A2(
+	_user$project$Midi$Context,
 	_elm_lang$core$Dict$empty,
 	{ctor: '[]'});
-var _user$project$MidiRenderer$fromSmfTrack = function (track) {
+var _user$project$Midi$fromSmfTrack = function (track) {
 	return function (notes) {
-		return A2(_user$project$MidiRenderer$Track, '', notes);
+		return A2(_user$project$Midi$Track, '', notes);
 	}(
 		_elm_lang$core$List$reverse(
 			function (_) {
@@ -9993,18 +10117,136 @@ var _user$project$MidiRenderer$fromSmfTrack = function (track) {
 				_elm_lang$core$Tuple$second(
 					A3(
 						_elm_lang$core$List$foldl,
-						_user$project$MidiRenderer$updateTrack,
-						{ctor: '_Tuple2', _0: 0, _1: _user$project$MidiRenderer$initContext},
+						_user$project$Midi$updateTrack,
+						{ctor: '_Tuple2', _0: 0, _1: _user$project$Midi$initContext},
 						track.events)))));
 };
-var _user$project$MidiRenderer$fromSmf = function (smf) {
-	return _user$project$MidiRenderer$Midi(
-		A2(_elm_lang$core$List$map, _user$project$MidiRenderer$fromSmfTrack, smf.tracks));
+var _user$project$Midi$fromSmf = function (smf) {
+	return _user$project$Midi$Midi(
+		A2(_elm_lang$core$List$map, _user$project$Midi$fromSmfTrack, smf.tracks));
 };
-var _user$project$MidiRenderer$renderSmf = function (smf) {
-	return _user$project$MidiRenderer$renderMidi(
-		_user$project$MidiRenderer$fromSmf(smf));
+var _user$project$MidiPlayer$px = function (num) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(num),
+		'px');
 };
+var _user$project$MidiPlayer$noteStyle = function (note) {
+	return {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'left',
+				_1: _user$project$MidiPlayer$px((note.position / 100) | 0)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'top',
+					_1: _user$project$MidiPlayer$px(60 - (note.note - 30))
+				},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'height', _1: '1px'},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'width',
+							_1: _user$project$MidiPlayer$px((note.length / 100) | 0)
+						},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'pink'},
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}
+	};
+};
+var _user$project$MidiPlayer$viewNote = function (note) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(
+				_user$project$MidiPlayer$noteStyle(note)),
+			_1: {ctor: '[]'}
+		},
+		{ctor: '[]'});
+};
+var _user$project$MidiPlayer$trackStyle = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'height', _1: '60px'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '2px'},
+				_1: {ctor: '[]'}
+			}
+		}
+	}
+};
+var _user$project$MidiPlayer$viewTrack = function (track) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$trackStyle),
+			_1: {ctor: '[]'}
+		},
+		A2(_elm_lang$core$List$map, _user$project$MidiPlayer$viewNote, track.notes));
+};
+var _user$project$MidiPlayer$playButton = F2(
+	function (options, playing) {
+		return A2(
+			_elm_lang$html$Html$button,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(
+					playing ? options.onStop : options.onStart),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					playing ? 'Stop' : 'Start'),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$MidiPlayer$view = F3(
+	function (options, playing, midi) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(_user$project$MidiPlayer$playButton, options, playing),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						A2(_elm_lang$core$List$map, _user$project$MidiPlayer$viewTrack, midi.tracks)),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
+var _user$project$MidiPlayer$Options = F2(
+	function (a, b) {
+		return {onStart: a, onStop: b};
+	});
 var _user$project$Main$fileLoadButton = F2(
 	function (accept_, tagger) {
 		return A2(
@@ -10031,59 +10273,144 @@ var _user$project$Main$fileLoadButton = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Main$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
-};
-var _user$project$Main$Model = function (a) {
-	return {smf: a};
-};
+var _user$project$Main$see = F3(
+	function (f, data, b) {
+		var _p0 = f(data);
+		if (_p0.ctor === 'Just') {
+			return b;
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Main',
+				{
+					start: {line: 53, column: 3},
+					end: {line: 58, column: 30}
+				},
+				_p0)('undefined');
+		}
+	});
+var _user$project$Main$get = F2(
+	function (f, data) {
+		var _p2 = f(data);
+		if (_p2.ctor === 'Just') {
+			return _p2._0;
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Main',
+				{
+					start: {line: 43, column: 3},
+					end: {line: 48, column: 30}
+				},
+				_p2)('undefined');
+		}
+	});
+var _user$project$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {midi: a, playing: b, startTime: c, time: d, error: e};
+	});
+var _user$project$Main$DecodeError = F2(
+	function (a, b) {
+		return {ctor: 'DecodeError', _0: a, _1: b};
+	});
+var _user$project$Main$NoError = {ctor: 'NoError'};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: _user$project$Main$Model(_elm_lang$core$Maybe$Nothing),
+	_0: A5(_user$project$Main$Model, _elm_lang$core$Maybe$Nothing, false, 0, 0, _user$project$Main$NoError),
 	_1: _elm_lang$core$Platform_Cmd$none
+};
+var _user$project$Main$Timed = function (a) {
+	return {ctor: 'Timed', _0: a};
+};
+var _user$project$Main$Tick = function (a) {
+	return {ctor: 'Tick', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return model.playing ? A2(_elm_lang$core$Time$every, 10 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$Main$Stop = {ctor: 'Stop'};
+var _user$project$Main$Start = function (a) {
+	return {ctor: 'Start', _0: a};
 };
 var _user$project$Main$ReadBuffer = function (a) {
 	return {ctor: 'ReadBuffer', _0: a};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'GotFile') {
-			return {
-				ctor: '_Tuple2',
-				_0: model,
-				_1: A2(
-					_elm_lang$core$Task$attempt,
-					_user$project$Main$ReadBuffer,
-					_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p0._0))
-			};
-		} else {
-			if (_p0._0.ctor === 'Ok') {
-				var _p1 = _p0._0._0;
+		var _p4 = msg;
+		switch (_p4.ctor) {
+			case 'GotFile':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(
+						_elm_lang$core$Task$attempt,
+						_user$project$Main$ReadBuffer,
+						_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p4._0))
+				};
+			case 'ReadBuffer':
+				if (_p4._0.ctor === 'Ok') {
+					var _p6 = _p4._0._0;
+					var _p5 = A2(_user$project$BinaryDecoder_Byte$decode, _user$project$SmfDecoder$smf, _p6);
+					if (_p5.ctor === 'Ok') {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									midi: _elm_lang$core$Maybe$Just(
+										_user$project$Midi$fromSmf(_p5._0))
+								}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									error: A2(_user$project$Main$DecodeError, _p6, _p5._0)
+								}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					}
+				} else {
+					return _elm_lang$core$Native_Utils.crashCase(
+						'Main',
+						{
+							start: {line: 77, column: 3},
+							end: {line: 115, column: 45}
+						},
+						_p4)('failed to read arrayBuffer');
+				}
+			case 'Start':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{
-							smf: _elm_lang$core$Maybe$Just(
-								A2(
-									_elm_lang$core$Result$mapError,
-									function (e) {
-										return {ctor: '_Tuple2', _0: e, _1: _p1};
-									},
-									A2(_user$project$BinaryDecoder_Byte$decode, _user$project$SmfDecoder$smf, _p1)))
-						}),
+						{startTime: _p4._0, playing: true}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			} else {
-				return _elm_lang$core$Native_Utils.crashCase(
-					'Main',
-					{
-						start: {line: 41, column: 3},
-						end: {line: 56, column: 47}
-					},
-					_p0)('failed to read arrayBuffer');
-			}
+			case 'Stop':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{playing: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Tick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{time: _p4._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(_elm_lang$core$Task$perform, _p4._0, _elm_lang$core$Time$now)
+				};
 		}
 	});
 var _user$project$Main$GotFile = function (a) {
@@ -10100,7 +10427,7 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('MIDI Decoder'),
+					_0: _elm_lang$html$Html$text('MIDI Player'),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -10109,26 +10436,32 @@ var _user$project$Main$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: function () {
-						var _p3 = model.smf;
-						_v1_2:
-						do {
-							if (_p3.ctor === 'Just') {
-								if (_p3._0.ctor === 'Ok') {
-									return _user$project$MidiRenderer$renderSmf(_p3._0._0);
-								} else {
-									if (_p3._0._0.ctor === '_Tuple2') {
-										return A2(_user$project$ErrorFormatter$print, _p3._0._0._1, _p3._0._0._0);
-									} else {
-										break _v1_2;
-									}
-								}
-							} else {
-								break _v1_2;
-							}
-						} while(false);
-						return _elm_lang$html$Html$text('');
+						var _p8 = model.midi;
+						if (_p8.ctor === 'Just') {
+							return A3(
+								_user$project$MidiPlayer$view,
+								{
+									onStart: _user$project$Main$Timed(_user$project$Main$Start),
+									onStop: _user$project$Main$Stop
+								},
+								model.playing,
+								_p8._0);
+						} else {
+							return _elm_lang$html$Html$text('');
+						}
 					}(),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: function () {
+							var _p9 = model.error;
+							if (_p9.ctor === 'NoError') {
+								return _elm_lang$html$Html$text('');
+							} else {
+								return A2(_user$project$ErrorFormatter$print, _p9._0, _p9._1);
+							}
+						}(),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
