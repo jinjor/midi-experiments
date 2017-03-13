@@ -1,4 +1,4 @@
-module Midi exposing (Midi, Track, Note, fromSmf)
+module Midi exposing (Midi, Track, Note, toKey, fromSmf)
 
 import Dict exposing (Dict)
 import SmfDecoder as Smf exposing (Smf, MidiEvent(..))
@@ -20,6 +20,11 @@ type alias Note =
   , note : Int
   , length : Int
   }
+
+
+toKey : Note -> String
+toKey note =
+  toString note.position ++ toString note.note
 
 
 emptyTrack : Track

@@ -28,7 +28,7 @@ type alias Model =
   { midi : Maybe Midi
   , playing : Bool
   , startTime : Time
-  , time : Time
+  , currentTime : Time
   , error : Error
   }
 
@@ -106,9 +106,9 @@ update msg model =
           | playing = False
       }, Cmd.none )
 
-    Tick time ->
+    Tick currentTime ->
       ({ model
-          | time = time
+          | currentTime = currentTime
       }, Cmd.none )
 
     Timed toMsg ->
@@ -135,6 +135,7 @@ view model =
             , onStop = Stop
             }
             model.playing
+            (model.currentTime - model.startTime)
             midi
 
         _ ->

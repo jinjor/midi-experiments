@@ -1,9 +1,12 @@
 module MidiPlayer exposing (Options, view)
 
+import Time exposing (Time)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (..)
 import Midi exposing (..)
 
 
@@ -13,12 +16,12 @@ type alias Options msg =
   }
 
 
-view : Options msg -> Bool -> Midi -> Html msg
-view options playing midi =
+view : Options msg -> Bool -> Time -> Midi -> Html msg
+view options playing time midi =
   div []
     [ playButton options playing
     , midi.tracks
-        |> List.map viewTrack
+        |> List.map (viewTrack time)
         |> div []
     ]
 
@@ -30,11 +33,11 @@ playButton options playing =
     [ text (if playing then "Stop" else "Start" ) ]
 
 
-viewTrack : Track -> Html msg
-viewTrack track =
+viewTrack : Time -> Track -> Html msg
+viewTrack time track =
   track.notes
-    |> List.map viewNote
-    |> div [ style trackStyle ]
+    |> List.map (\note -> (Midi.toKey note, viewNote note))
+    |> Keyed.node "div" [ style trackStyle ]
 
 
 trackStyle : List (String, String)

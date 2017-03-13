@@ -8660,6 +8660,12 @@ var _elm_lang$html$Html_Events$Options = F2(
 	function (a, b) {
 		return {stopPropagation: a, preventDefault: b};
 	});
+var _elm_lang$html$Html_Keyed$node = _elm_lang$virtual_dom$VirtualDom$keyedNode;
+var _elm_lang$html$Html_Keyed$ol = _elm_lang$html$Html_Keyed$node('ol');
+var _elm_lang$html$Html_Keyed$ul = _elm_lang$html$Html_Keyed$node('ul');
+var _elm_lang$html$Html_Lazy$lazy3 = _elm_lang$virtual_dom$VirtualDom$lazy3;
+var _elm_lang$html$Html_Lazy$lazy2 = _elm_lang$virtual_dom$VirtualDom$lazy2;
+var _elm_lang$html$Html_Lazy$lazy = _elm_lang$virtual_dom$VirtualDom$lazy;
 var _rtfeldman$hex$Hex$toString = function (num) {
 	return _elm_lang$core$String$fromList(
 		(_elm_lang$core$Native_Utils.cmp(num, 0) < 0) ? {
@@ -10032,6 +10038,12 @@ var _user$project$SmfDecoder$smf = A2(
 				header.length + 8,
 				A2(_user$project$BinaryDecoder$repeat, header.trackNumber, _user$project$SmfDecoder$track)));
 	});
+var _user$project$Midi$toKey = function (note) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(note.position),
+		_elm_lang$core$Basics$toString(note.note));
+};
 var _user$project$Midi$Midi = function (a) {
 	return {tracks: a};
 };
@@ -10198,16 +10210,27 @@ var _user$project$MidiPlayer$trackStyle = {
 		}
 	}
 };
-var _user$project$MidiPlayer$viewTrack = function (track) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$trackStyle),
-			_1: {ctor: '[]'}
-		},
-		A2(_elm_lang$core$List$map, _user$project$MidiPlayer$viewNote, track.notes));
-};
+var _user$project$MidiPlayer$viewTrack = F2(
+	function (time, track) {
+		return A3(
+			_elm_lang$html$Html_Keyed$node,
+			'div',
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$trackStyle),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$core$List$map,
+				function (note) {
+					return {
+						ctor: '_Tuple2',
+						_0: _user$project$Midi$toKey(note),
+						_1: _user$project$MidiPlayer$viewNote(note)
+					};
+				},
+				track.notes));
+	});
 var _user$project$MidiPlayer$playButton = F2(
 	function (options, playing) {
 		return A2(
@@ -10225,8 +10248,8 @@ var _user$project$MidiPlayer$playButton = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$MidiPlayer$view = F3(
-	function (options, playing, midi) {
+var _user$project$MidiPlayer$view = F4(
+	function (options, playing, time, midi) {
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -10238,7 +10261,10 @@ var _user$project$MidiPlayer$view = F3(
 					_0: A2(
 						_elm_lang$html$Html$div,
 						{ctor: '[]'},
-						A2(_elm_lang$core$List$map, _user$project$MidiPlayer$viewTrack, midi.tracks)),
+						A2(
+							_elm_lang$core$List$map,
+							_user$project$MidiPlayer$viewTrack(time),
+							midi.tracks)),
 					_1: {ctor: '[]'}
 				}
 			});
@@ -10305,7 +10331,7 @@ var _user$project$Main$get = F2(
 	});
 var _user$project$Main$Model = F5(
 	function (a, b, c, d, e) {
-		return {midi: a, playing: b, startTime: c, time: d, error: e};
+		return {midi: a, playing: b, startTime: c, currentTime: d, error: e};
 	});
 var _user$project$Main$DecodeError = F2(
 	function (a, b) {
@@ -10402,7 +10428,7 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{time: _p4._0}),
+						{currentTime: _p4._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -10438,13 +10464,14 @@ var _user$project$Main$view = function (model) {
 					_0: function () {
 						var _p8 = model.midi;
 						if (_p8.ctor === 'Just') {
-							return A3(
+							return A4(
 								_user$project$MidiPlayer$view,
 								{
 									onStart: _user$project$Main$Timed(_user$project$Main$Start),
 									onStop: _user$project$Main$Stop
 								},
 								model.playing,
+								model.currentTime - model.startTime,
 								_p8._0);
 						} else {
 							return _elm_lang$html$Html$text('');
