@@ -10195,17 +10195,25 @@ var _user$project$MidiPlayer$viewNote = function (note) {
 };
 var _user$project$MidiPlayer$trackStyle = {
 	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+	_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
 	_1: {
 		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
+		_0: {ctor: '_Tuple2', _0: 'top', _1: '0'},
 		_1: {
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'height', _1: '60px'},
+			_0: {ctor: '_Tuple2', _0: 'left', _1: '0'},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '2px'},
-				_1: {ctor: '[]'}
+				_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'margin-bottom', _1: '2px'},
+						_1: {ctor: '[]'}
+					}
+				}
 			}
 		}
 	}
@@ -10248,6 +10256,27 @@ var _user$project$MidiPlayer$playButton = F2(
 				_1: {ctor: '[]'}
 			});
 	});
+var _user$project$MidiPlayer$tracksContainerStyle = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'height', _1: '60px'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'},
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	}
+};
 var _user$project$MidiPlayer$view = F4(
 	function (options, playing, time, midi) {
 		return A2(
@@ -10260,7 +10289,11 @@ var _user$project$MidiPlayer$view = F4(
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$div,
-						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$tracksContainerStyle),
+							_1: {ctor: '[]'}
+						},
 						A2(
 							_elm_lang$core$List$map,
 							_user$project$MidiPlayer$viewTrack(time),

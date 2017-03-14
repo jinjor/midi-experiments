@@ -22,8 +22,18 @@ view options playing time midi =
     [ playButton options playing
     , midi.tracks
         |> List.map (viewTrack time)
-        |> div []
+        |> div [ style tracksContainerStyle ]
     ]
+
+
+tracksContainerStyle : List (String, String)
+tracksContainerStyle =
+  [ ("position", "relative")
+  , ("background-color", "black")
+  , ("height", "60px")
+  , ("width", "100%")
+  , ("overflow", "hidden")
+  ]
 
 
 playButton : Options msg -> Bool -> Html msg
@@ -42,9 +52,11 @@ viewTrack time track =
 
 trackStyle : List (String, String)
 trackStyle =
-  [ ("position", "relative")
-  , ("background-color", "black")
-  , ("height", "60px")
+  [ ("position", "absolute")
+  , ("top", "0")
+  , ("left", "0")
+  , ("width", "100%")
+  , ("height", "100%")
   , ("margin-bottom", "2px")
   ]
 
