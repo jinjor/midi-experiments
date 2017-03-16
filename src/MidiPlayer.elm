@@ -2,11 +2,13 @@ module MidiPlayer exposing (Options, view)
 
 import Time exposing (Time)
 import Dict exposing (Dict)
-import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html as H exposing (..)
+import Html.Attributes as HA exposing (..)
 import Html.Events exposing (..)
-import Html.Keyed as Keyed
 import Html.Lazy exposing (..)
+import Svg as S exposing (..)
+import Svg.Attributes as SA exposing (..)
+import Svg.Keyed
 import Midi exposing (..)
 
 
@@ -19,20 +21,29 @@ type alias Options msg =
 view : Options msg -> Bool -> Time -> Midi -> Html msg
 view options playing time midi =
   div []
-    [ playButton options playing
+    [ control options playing
     , midi.tracks
         |> List.map (viewTrack time)
-        |> div [ style tracksContainerStyle ]
+        |> svg containerStyles
     ]
 
 
-tracksContainerStyle : List (String, String)
-tracksContainerStyle =
-  [ ("position", "relative")
-  , ("background-color", "black")
-  , ("height", "60px")
-  , ("width", "100%")
-  , ("overflow", "hidden")
+control : Options msg -> Bool -> Html msg
+control options playing =
+  div [] [ playButton options playing ]
+
+
+containerStyles : List (S.Attribute msg)
+containerStyles =
+  [ SA.width "40000"
+  , SA.height "300px"
+  , viewBox (String.join " " <| List.map toString [0, 0, 10000, 60])
+  , preserveAspectRatio "none"
+  , HA.style
+      [ ("width", "800px")
+      , ("height", "300px")
+      , ("background-color", "black")
+      ]
   ]
 
 
@@ -40,41 +51,26 @@ playButton : Options msg -> Bool -> Html msg
 playButton options playing =
   button
     [ onClick (if playing then options.onStop else options.onStart ) ]
-    [ text (if playing then "Stop" else "Start" ) ]
+    [ H.text (if playing then "Stop" else "Start" ) ]
 
 
 viewTrack : Time -> Track -> Html msg
 viewTrack time track =
   track.notes
     |> List.map (\note -> (Midi.toKey note, viewNote note))
-    |> Keyed.node "div" [ style trackStyle ]
-
-
-trackStyle : List (String, String)
-trackStyle =
-  [ ("position", "absolute")
-  , ("top", "0")
-  , ("left", "0")
-  , ("width", "100%")
-  , ("height", "100%")
-  , ("margin-bottom", "2px")
-  ]
+    |> Svg.Keyed.node "g" [ ]
 
 
 viewNote : Note -> Html msg
 viewNote note =
-  div [ style (noteStyle note) ] []
-
-
-noteStyle : Note -> List (String, String)
-noteStyle note =
-  [ ("position", "absolute")
-  , ("left", px <| note.position // 100)
-  , ("top", px <| 60 - (note.note - 30) )
-  , ("height", "1px")
-  , ("width", px <| note.length // 100)
-  , ("background-color", "pink")
-  ]
+  rect
+    [ x (toString note.position)
+    , y (toString <| 60 - (note.note - 30))
+    , SA.width (toString note.length)
+    , SA.height "1"
+    , fill "pink"
+    ]
+    []
 
 
 px : a -> String
