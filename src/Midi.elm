@@ -5,7 +5,8 @@ import SmfDecoder as Smf exposing (Smf, MidiEvent(..))
 
 
 type alias Midi =
-  { tracks : List Track
+  { timeBase : Int
+  , tracks : List Track
   }
 
 
@@ -36,7 +37,7 @@ fromSmf : Smf -> Midi
 fromSmf smf =
   smf.tracks
     |> List.map fromSmfTrack
-    |> Midi
+    |> Midi smf.header.timeBase
 
 
 fromSmfTrack : Smf.Track -> Track

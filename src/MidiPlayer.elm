@@ -20,12 +20,16 @@ type alias Options msg =
 
 view : Options msg -> Bool -> Time -> Midi -> Html msg
 view options playing time midi =
-  div []
-    [ control options playing
-    , midi.tracks
-        |> List.map (viewTrack time)
-        |> svg containerStyles
-    ]
+  let
+    currentPosition =
+      floor <| (toFloat midi.timeBase * 2.0 / 1000) * time
+  in
+    div []
+      [ control options playing
+      , midi.tracks
+          |> List.map (viewTrack currentPosition)
+          |> svg (containerStyles currentPosition)
+      ]
 
 
 control : Options msg -> Bool -> Html msg
@@ -33,11 +37,11 @@ control options playing =
   div [] [ playButton options playing ]
 
 
-containerStyles : List (S.Attribute msg)
-containerStyles =
+containerStyles : Int -> List (S.Attribute msg)
+containerStyles currentPosition =
   [ SA.width "40000"
   , SA.height "300px"
-  , viewBox (String.join " " <| List.map toString [0, 0, 10000, 60])
+  , viewBox (String.join " " <| List.map toString [currentPosition, 0, 10000, 60])
   , preserveAspectRatio "none"
   , HA.style
       [ ("width", "800px")
@@ -54,17 +58,22 @@ playButton options playing =
     [ H.text (if playing then "Stop" else "Start" ) ]
 
 
-viewTrack : Time -> Track -> Html msg
-viewTrack time track =
+viewTrack : Int -> Track -> Html msg
+viewTrack currentPosition track =
   track.notes
-    |> List.map (\note -> (Midi.toKey note, viewNote note))
-    |> Svg.Keyed.node "g" [ ]
+    |> List.filterMap (\note ->
+      if currentPosition < note.position + note.length && currentPosition > note.position - 10000 then
+        Just (Midi.toKey note, lazy2 viewNote False note)
+      else
+        Nothing
+      )
+    |> Svg.Keyed.node "g" []
 
 
-viewNote : Note -> Html msg
-viewNote note =
+viewNote : Bool -> Note -> Html msg
+viewNote heighlight note =
   rect
-    [ x (toString note.position)
+    [ x (toString <| note.position)
     , y (toString <| 60 - (note.note - 30))
     , SA.width (toString note.length)
     , SA.height "1"

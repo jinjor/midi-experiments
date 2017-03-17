@@ -95,9 +95,10 @@ update msg model =
     ReadBuffer (Err e) ->
       Debug.crash "failed to read arrayBuffer"
 
-    Start startTime ->
+    Start currentTime ->
       ({ model
-          | startTime = startTime
+          | startTime = if model.currentTime > 0 then currentTime - (model.currentTime - model.startTime) else currentTime
+          , currentTime = currentTime
           , playing = True
       }, Cmd.none )
 
@@ -118,7 +119,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   if model.playing then
-    Time.every (10 * Time.millisecond) Tick
+    Time.every (1000 * Time.millisecond / 30) Tick
   else
     Sub.none
 

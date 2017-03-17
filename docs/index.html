@@ -10392,9 +10392,10 @@ var _user$project$Midi$toKey = function (note) {
 		_elm_lang$core$Basics$toString(note.position),
 		_elm_lang$core$Basics$toString(note.note));
 };
-var _user$project$Midi$Midi = function (a) {
-	return {tracks: a};
-};
+var _user$project$Midi$Midi = F2(
+	function (a, b) {
+		return {timeBase: a, tracks: b};
+	});
 var _user$project$Midi$Track = F2(
 	function (a, b) {
 		return {name: a, notes: b};
@@ -10482,7 +10483,9 @@ var _user$project$Midi$fromSmfTrack = function (track) {
 						track.events)))));
 };
 var _user$project$Midi$fromSmf = function (smf) {
-	return _user$project$Midi$Midi(
+	return A2(
+		_user$project$Midi$Midi,
+		smf.header.timeBase,
 		A2(_elm_lang$core$List$map, _user$project$Midi$fromSmfTrack, smf.tracks));
 };
 var _user$project$MidiPlayer$px = function (num) {
@@ -10491,49 +10494,51 @@ var _user$project$MidiPlayer$px = function (num) {
 		_elm_lang$core$Basics$toString(num),
 		'px');
 };
-var _user$project$MidiPlayer$viewNote = function (note) {
-	return A2(
-		_elm_lang$svg$Svg$rect,
-		{
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$x(
-				_elm_lang$core$Basics$toString(note.position)),
-			_1: {
+var _user$project$MidiPlayer$viewNote = F2(
+	function (heighlight, note) {
+		return A2(
+			_elm_lang$svg$Svg$rect,
+			{
 				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$y(
-					_elm_lang$core$Basics$toString(60 - (note.note - 30))),
+				_0: _elm_lang$svg$Svg_Attributes$x(
+					_elm_lang$core$Basics$toString(note.position)),
 				_1: {
 					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$width(
-						_elm_lang$core$Basics$toString(note.length)),
+					_0: _elm_lang$svg$Svg_Attributes$y(
+						_elm_lang$core$Basics$toString(60 - (note.note - 30))),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$height('1'),
+						_0: _elm_lang$svg$Svg_Attributes$width(
+							_elm_lang$core$Basics$toString(note.length)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$fill('pink'),
-							_1: {ctor: '[]'}
+							_0: _elm_lang$svg$Svg_Attributes$height('1'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$fill('pink'),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
-			}
-		},
-		{ctor: '[]'});
-};
+			},
+			{ctor: '[]'});
+	});
 var _user$project$MidiPlayer$viewTrack = F2(
-	function (time, track) {
+	function (currentPosition, track) {
 		return A3(
 			_elm_lang$svg$Svg_Keyed$node,
 			'g',
 			{ctor: '[]'},
 			A2(
-				_elm_lang$core$List$map,
+				_elm_lang$core$List$filterMap,
 				function (note) {
-					return {
-						ctor: '_Tuple2',
-						_0: _user$project$Midi$toKey(note),
-						_1: _user$project$MidiPlayer$viewNote(note)
-					};
+					return ((_elm_lang$core$Native_Utils.cmp(currentPosition, note.position + note.length) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position - 10000) > 0)) ? _elm_lang$core$Maybe$Just(
+						{
+							ctor: '_Tuple2',
+							_0: _user$project$Midi$toKey(note),
+							_1: A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$MidiPlayer$viewNote, false, note)
+						}) : _elm_lang$core$Maybe$Nothing;
 				},
 				track.notes));
 	});
@@ -10554,62 +10559,64 @@ var _user$project$MidiPlayer$playButton = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$MidiPlayer$containerStyles = {
-	ctor: '::',
-	_0: _elm_lang$svg$Svg_Attributes$width('40000'),
-	_1: {
+var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
+	return {
 		ctor: '::',
-		_0: _elm_lang$svg$Svg_Attributes$height('300px'),
+		_0: _elm_lang$svg$Svg_Attributes$width('40000'),
 		_1: {
 			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$viewBox(
-				A2(
-					_elm_lang$core$String$join,
-					' ',
+			_0: _elm_lang$svg$Svg_Attributes$height('300px'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$viewBox(
 					A2(
-						_elm_lang$core$List$map,
-						_elm_lang$core$Basics$toString,
-						{
-							ctor: '::',
-							_0: 0,
-							_1: {
+						_elm_lang$core$String$join,
+						' ',
+						A2(
+							_elm_lang$core$List$map,
+							_elm_lang$core$Basics$toString,
+							{
 								ctor: '::',
-								_0: 0,
+								_0: currentPosition,
 								_1: {
 									ctor: '::',
-									_0: 10000,
+									_0: 0,
 									_1: {
 										ctor: '::',
-										_0: 60,
+										_0: 10000,
+										_1: {
+											ctor: '::',
+											_0: 60,
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}))),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$preserveAspectRatio('none'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'width', _1: '800px'},
+								_1: {
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'height', _1: '300px'},
+									_1: {
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
 										_1: {ctor: '[]'}
 									}
 								}
-							}
-						}))),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$preserveAspectRatio('none'),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						{
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'width', _1: '800px'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'height', _1: '300px'},
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
-									_1: {ctor: '[]'}
-								}
-							}
-						}),
-					_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		}
-	}
+	};
 };
 var _user$project$MidiPlayer$control = F2(
 	function (options, playing) {
@@ -10624,6 +10631,8 @@ var _user$project$MidiPlayer$control = F2(
 	});
 var _user$project$MidiPlayer$view = F4(
 	function (options, playing, time, midi) {
+		var currentPosition = _elm_lang$core$Basics$floor(
+			((_elm_lang$core$Basics$toFloat(midi.timeBase) * 2.0) / 1000) * time);
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
@@ -10634,10 +10643,10 @@ var _user$project$MidiPlayer$view = F4(
 					ctor: '::',
 					_0: A2(
 						_elm_lang$svg$Svg$svg,
-						_user$project$MidiPlayer$containerStyles,
+						_user$project$MidiPlayer$containerStyles(currentPosition),
 						A2(
 							_elm_lang$core$List$map,
-							_user$project$MidiPlayer$viewTrack(time),
+							_user$project$MidiPlayer$viewTrack(currentPosition),
 							midi.tracks)),
 					_1: {ctor: '[]'}
 				}
@@ -10724,7 +10733,7 @@ var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$subscriptions = function (model) {
-	return model.playing ? A2(_elm_lang$core$Time$every, 10 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none;
+	return model.playing ? A2(_elm_lang$core$Time$every, (1000 * _elm_lang$core$Time$millisecond) / 30, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none;
 };
 var _user$project$Main$Stop = {ctor: 'Stop'};
 var _user$project$Main$Start = function (a) {
@@ -10777,16 +10786,21 @@ var _user$project$Main$update = F2(
 						'Main',
 						{
 							start: {line: 77, column: 3},
-							end: {line: 115, column: 45}
+							end: {line: 116, column: 45}
 						},
 						_p4)('failed to read arrayBuffer');
 				}
 			case 'Start':
+				var _p8 = _p4._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{startTime: _p4._0, playing: true}),
+						{
+							startTime: (_elm_lang$core$Native_Utils.cmp(model.currentTime, 0) > 0) ? (_p8 - (model.currentTime - model.startTime)) : _p8,
+							currentTime: _p8,
+							playing: true
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Stop':
@@ -10836,8 +10850,8 @@ var _user$project$Main$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: function () {
-						var _p8 = model.midi;
-						if (_p8.ctor === 'Just') {
+						var _p9 = model.midi;
+						if (_p9.ctor === 'Just') {
 							return A4(
 								_user$project$MidiPlayer$view,
 								{
@@ -10846,7 +10860,7 @@ var _user$project$Main$view = function (model) {
 								},
 								model.playing,
 								model.currentTime - model.startTime,
-								_p8._0);
+								_p9._0);
 						} else {
 							return _elm_lang$html$Html$text('');
 						}
@@ -10854,11 +10868,11 @@ var _user$project$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p9 = model.error;
-							if (_p9.ctor === 'NoError') {
+							var _p10 = model.error;
+							if (_p10.ctor === 'NoError') {
 								return _elm_lang$html$Html$text('');
 							} else {
-								return A2(_user$project$ErrorFormatter$print, _p9._0, _p9._1);
+								return A2(_user$project$ErrorFormatter$print, _p10._0, _p10._1);
 							}
 						}(),
 						_1: {ctor: '[]'}
