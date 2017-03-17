@@ -10505,7 +10505,7 @@ var _user$project$MidiPlayer$viewNote = F2(
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$svg$Svg_Attributes$y(
-						_elm_lang$core$Basics$toString(60 - (note.note - 30))),
+						_elm_lang$core$Basics$toString(90 - ((note.note - 60) + 45))),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$svg$Svg_Attributes$width(
@@ -10542,30 +10542,114 @@ var _user$project$MidiPlayer$viewTrack = F2(
 				},
 				track.notes));
 	});
+var _user$project$MidiPlayer$buttonStyles = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 'width', _1: '40px'},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+			_1: {ctor: '[]'}
+		}
+	}
+};
+var _user$project$MidiPlayer$stop = _elm_lang$svg$Svg_Attributes$d('M10,8v14h4v-14zM20,8v14h4v-14z');
+var _user$project$MidiPlayer$start = _elm_lang$svg$Svg_Attributes$d('M10,8v14l16,-7z');
 var _user$project$MidiPlayer$playButton = F2(
 	function (options, playing) {
 		return A2(
-			_elm_lang$html$Html$button,
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Events$onClick(
 					playing ? options.onStop : options.onStart),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$buttonStyles),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width('40'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$height('30'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$svg$Svg$path,
+							{
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
+								_1: {
+									ctor: '::',
+									_0: playing ? _user$project$MidiPlayer$stop : _user$project$MidiPlayer$start,
+									_1: {ctor: '[]'}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$MidiPlayer$controlStyles = {
+	ctor: '::',
+	_0: {ctor: '_Tuple2', _0: 'width', _1: '480px'},
+	_1: {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'height', _1: '30px'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(255, 255, 255, 0.1)'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'color', _1: '#eee'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		}
+	}
+};
+var _user$project$MidiPlayer$control = F2(
+	function (options, playing) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$controlStyles),
 				_1: {ctor: '[]'}
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(
-					playing ? 'Stop' : 'Start'),
+				_0: A2(_user$project$MidiPlayer$playButton, options, playing),
 				_1: {ctor: '[]'}
 			});
 	});
 var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 	return {
 		ctor: '::',
-		_0: _elm_lang$svg$Svg_Attributes$width('40000'),
+		_0: _elm_lang$svg$Svg_Attributes$width('10000'),
 		_1: {
 			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$height('300px'),
+			_0: _elm_lang$svg$Svg_Attributes$height('90'),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$svg$Svg_Attributes$viewBox(
@@ -10586,7 +10670,7 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 										_0: 10000,
 										_1: {
 											ctor: '::',
-											_0: 60,
+											_0: 90,
 											_1: {ctor: '[]'}
 										}
 									}
@@ -10600,14 +10684,18 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 						_0: _elm_lang$html$Html_Attributes$style(
 							{
 								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'width', _1: '800px'},
+								_0: {ctor: '_Tuple2', _0: 'width', _1: '480px'},
 								_1: {
 									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'height', _1: '300px'},
+									_0: {ctor: '_Tuple2', _0: 'height', _1: '270px'},
 									_1: {
 										ctor: '::',
 										_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'display', _1: 'block'},
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							}),
@@ -10618,36 +10706,34 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 		}
 	};
 };
-var _user$project$MidiPlayer$control = F2(
-	function (options, playing) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(_user$project$MidiPlayer$playButton, options, playing),
-				_1: {ctor: '[]'}
-			});
-	});
 var _user$project$MidiPlayer$view = F4(
 	function (options, playing, time, midi) {
 		var currentPosition = _elm_lang$core$Basics$floor(
 			((_elm_lang$core$Basics$toFloat(midi.timeBase) * 2.0) / 1000) * time);
 		return A2(
 			_elm_lang$html$Html$div,
-			{ctor: '[]'},
 			{
 				ctor: '::',
-				_0: A2(_user$project$MidiPlayer$control, options, playing),
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					_user$project$MidiPlayer$containerStyles(currentPosition),
+					A2(
+						_elm_lang$core$List$map,
+						_user$project$MidiPlayer$viewTrack(currentPosition),
+						midi.tracks)),
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_elm_lang$svg$Svg$svg,
-						_user$project$MidiPlayer$containerStyles(currentPosition),
-						A2(
-							_elm_lang$core$List$map,
-							_user$project$MidiPlayer$viewTrack(currentPosition),
-							midi.tracks)),
+					_0: A2(_user$project$MidiPlayer$control, options, playing),
 					_1: {ctor: '[]'}
 				}
 			});

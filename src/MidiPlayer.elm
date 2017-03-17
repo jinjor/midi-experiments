@@ -24,38 +24,73 @@ view options playing time midi =
     currentPosition =
       floor <| (toFloat midi.timeBase * 2.0 / 1000) * time
   in
-    div []
-      [ control options playing
-      , midi.tracks
+    div [ HA.style [ ("position", "relative") ] ]
+      [ midi.tracks
           |> List.map (viewTrack currentPosition)
           |> svg (containerStyles currentPosition)
+      , control options playing
       ]
-
-
-control : Options msg -> Bool -> Html msg
-control options playing =
-  div [] [ playButton options playing ]
 
 
 containerStyles : Int -> List (S.Attribute msg)
 containerStyles currentPosition =
-  [ SA.width "40000"
-  , SA.height "300px"
-  , viewBox (String.join " " <| List.map toString [currentPosition, 0, 10000, 60])
+  [ SA.width "10000"
+  , SA.height "90"
+  , viewBox (String.join " " <| List.map toString [currentPosition, 0, 10000, 90])
   , preserveAspectRatio "none"
   , HA.style
-      [ ("width", "800px")
-      , ("height", "300px")
+      [ ("width", "480px")
+      , ("height", "270px")
       , ("background-color", "black")
+      , ("display", "block")
       ]
+  ]
+
+
+control : Options msg -> Bool -> Html msg
+control options playing =
+  div [ HA.style controlStyles ] [ playButton options playing ]
+
+
+controlStyles : List (String, String)
+controlStyles =
+  [ ("width", "480px")
+  , ("height", "30px")
+  , ("background-color", "rgba(255, 255, 255, 0.1)")
+  , ("color", "#eee")
+  , ("position", "absolute")
+  , ("bottom", "0")
   ]
 
 
 playButton : Options msg -> Bool -> Html msg
 playButton options playing =
-  button
-    [ onClick (if playing then options.onStop else options.onStart ) ]
-    [ H.text (if playing then "Stop" else "Start" ) ]
+  div
+    [ onClick (if playing then options.onStop else options.onStart )
+    , HA.style buttonStyles
+    ]
+    [ svg
+      [ SA.width "40", SA.height "30" ]
+      [ S.path [ SA.fill "#ddd", if playing then stop else start ] [] ]
+    ]
+
+start : S.Attribute msg
+start =
+  SA.d "M10,8v14l16,-7z"
+
+
+stop : S.Attribute msg
+stop =
+  SA.d "M10,8v14h4v-14zM20,8v14h4v-14z"
+
+
+buttonStyles : List (String, String)
+buttonStyles =
+  [ ("width", "40px")
+  , ("bottom", "0")
+  , ("text-align", "center")
+  ]
+
 
 
 viewTrack : Int -> Track -> Html msg
@@ -74,7 +109,7 @@ viewNote : Bool -> Note -> Html msg
 viewNote heighlight note =
   rect
     [ x (toString <| note.position)
-    , y (toString <| 60 - (note.note - 30))
+    , y (toString <| 90 - (note.note - 60 + 45))
     , SA.width (toString note.length)
     , SA.height "1"
     , fill "pink"
