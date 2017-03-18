@@ -10,10 +10,12 @@ import Svg as S exposing (..)
 import Svg.Attributes as SA exposing (..)
 import Svg.Keyed
 import Midi exposing (..)
+import Colors
 
 
 type alias Options msg =
-  { onStart : msg
+  { onBack : msg
+  , onStart : msg
   , onStop : msg
   }
 
@@ -26,7 +28,7 @@ view options playing time midi =
   in
     div [ HA.style [ ("position", "relative") ] ]
       [ midi.tracks
-          |> List.map (viewTrack currentPosition)
+          |> List.map2 (viewTrack currentPosition) (Colors.depth 3)
           |> svg (containerStyles currentPosition)
       , control options playing
       ]
@@ -49,7 +51,11 @@ containerStyles currentPosition =
 
 control : Options msg -> Bool -> Html msg
 control options playing =
-  div [ HA.style controlStyles ] [ playButton options playing ]
+  div
+    [ HA.style controlStyles ]
+    [ backButton options
+    , playButton options playing
+    ]
 
 
 controlStyles : List (String, String)
@@ -60,19 +66,35 @@ controlStyles =
   , ("color", "#eee")
   , ("position", "absolute")
   , ("bottom", "0")
+  , ("display", "flex")
   ]
+
+
+backButton : Options msg -> Html msg
+backButton options =
+  controlButton
+    ( onClick options.onBack )
+    ( S.path [ SA.fill "#ddd", back ] [] )
 
 
 playButton : Options msg -> Bool -> Html msg
 playButton options playing =
+  controlButton
+    ( onClick (if playing then options.onStop else options.onStart ) )
+    ( S.path [ SA.fill "#ddd", if playing then stop else start ] [] )
+
+
+controlButton : H.Attribute msg -> Svg msg -> Html msg
+controlButton event inner =
   div
-    [ onClick (if playing then options.onStop else options.onStart )
-    , HA.style buttonStyles
-    ]
-    [ svg
-      [ SA.width "40", SA.height "30" ]
-      [ S.path [ SA.fill "#ddd", if playing then stop else start ] [] ]
-    ]
+    [ event, HA.style buttonStyles ]
+    [ svg [ SA.width "40", SA.height "30" ] [ inner ] ]
+
+
+back : S.Attribute msg
+back =
+  SA.d "M12,10v10h2v-10zm14,0v10l-12,-5z"
+
 
 start : S.Attribute msg
 start =
@@ -81,7 +103,7 @@ start =
 
 stop : S.Attribute msg
 stop =
-  SA.d "M10,8v14h4v-14zM20,8v14h4v-14z"
+  SA.d "M10,8v14h4v-14zm10,0v14h4v-14z"
 
 
 buttonStyles : List (String, String)
@@ -92,27 +114,26 @@ buttonStyles =
   ]
 
 
-
-viewTrack : Int -> Track -> Html msg
-viewTrack currentPosition track =
+viewTrack : Int -> String -> Track -> Html msg
+viewTrack currentPosition color track =
   track.notes
     |> List.filterMap (\note ->
       if currentPosition < note.position + note.length && currentPosition > note.position - 10000 then
-        Just (Midi.toKey note, lazy2 viewNote False note)
+        Just (Midi.toKey note, lazy2 viewNote color note)
       else
         Nothing
       )
     |> Svg.Keyed.node "g" []
 
 
-viewNote : Bool -> Note -> Html msg
-viewNote heighlight note =
+viewNote : String -> Note -> Html msg
+viewNote color note =
   rect
     [ x (toString <| note.position)
     , y (toString <| 90 - (note.note - 60 + 45))
     , SA.width (toString note.length)
     , SA.height "1"
-    , fill "pink"
+    , fill color
     ]
     []
 

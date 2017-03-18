@@ -61,6 +61,7 @@ see f data b =
 type Msg
   = GotFile File
   | ReadBuffer (Result File.Error ArrayBuffer)
+  | Back
   | Start Time
   | Stop
   | Tick Time
@@ -94,6 +95,13 @@ update msg model =
 
     ReadBuffer (Err e) ->
       Debug.crash "failed to read arrayBuffer"
+
+    Back ->
+      ({ model
+          | startTime = 0
+          , currentTime = 0
+          , playing = False
+      }, Cmd.none )
 
     Start currentTime ->
       ({ model
@@ -132,7 +140,8 @@ view model =
     , case model.midi of
         Just midi ->
           MidiPlayer.view
-            { onStart = Timed Start
+            { onBack = Back
+            , onStart = Timed Start
             , onStop = Stop
             }
             model.playing
