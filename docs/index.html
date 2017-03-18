@@ -21,7 +21,7 @@
     navigator.requestMIDIAccess()
       .then(midiAccess => {
         for(let output of midiAccess.outputs.values()) {
-          outputs[outputs.id] = output;
+          outputs[output.id] = output;
         };
         app.ports.receiveMidiOuts.send(Object.keys(outputs).map(id => {
           let output = outputs[id];

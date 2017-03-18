@@ -3,14 +3,16 @@ module Main exposing (..)
 import Json.Decode as Decode
 import Task
 import Time exposing (Time)
+import Process
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Lazy exposing (..)
 import BinaryDecoder.File as File exposing (File)
 import BinaryDecoder.Byte as Byte exposing (ArrayBuffer, Error)
 import SmfDecoder exposing (Smf)
 import ErrorFormatter
-import Midi exposing (Midi)
+import Midi exposing (Midi, Note)
 import MidiPlayer
 import WebMidiApi exposing (MidiOut, MidiOutMessage)
 
@@ -21,7 +23,7 @@ main =
     { init = init
     , update = update
     , subscriptions = subscriptions
-    , view = view
+    , view = lazy view
     }
 
 
@@ -30,6 +32,7 @@ type alias Model =
   , playing : Bool
   , startTime : Time
   , currentTime : Time
+  , futureNotes : List Note
   , midiOuts : List MidiOut
   , selectedMidiOut : Maybe String
   , error : Error
@@ -71,11 +74,12 @@ type Msg
   | Timed (Time -> Msg)
   | ReceiveMidiOuts (List MidiOut)
   | SelectMidiOut String
+  | Send WebMidiApi.MidiMessage
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model Nothing False 0 0 [] Nothing NoError, Cmd.none)
+  (Model Nothing False 0 0 [] [] Nothing NoError, Cmd.none)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -109,7 +113,7 @@ update msg model =
       }, Cmd.none )
 
     Start currentTime ->
-      ({ model
+      { model
           | startTime =
               if model.currentTime > 0 then
                 currentTime - (model.currentTime - model.startTime)
@@ -117,7 +121,9 @@ update msg model =
                 currentTime
           , currentTime = currentTime
           , playing = True
-      }, Cmd.none )
+          , futureNotes = prepareFutureNotes (get .midi model)
+      }
+      |> update (Tick currentTime)
 
     Stop ->
       ({ model
@@ -125,18 +131,96 @@ update msg model =
       }, Cmd.none )
 
     Tick currentTime ->
-      ({ model
-          | currentTime = currentTime
-      }, Cmd.none )
+      let
+        (futureNotes, cmd) =
+          sendNotes
+            (get .midi model).timeBase
+            model.startTime
+            currentTime
+            model.futureNotes
+      in
+        ({ model
+            | currentTime = currentTime
+            , futureNotes = futureNotes
+        }, cmd )
 
     Timed toMsg ->
       ( model, Task.perform toMsg Time.now )
 
     ReceiveMidiOuts midiOuts ->
-      ( { model | midiOuts = midiOuts }, Cmd.none )
+      ( { model
+          | midiOuts = midiOuts
+          , selectedMidiOut =
+              midiOuts
+                |> List.head
+                |> Maybe.map .id
+        }
+      , Cmd.none
+      )
 
     SelectMidiOut id ->
       ( { model | selectedMidiOut = Just id }, Cmd.none )
+
+    Send message ->
+      ( model
+      , case (model.playing, model.selectedMidiOut) of
+          (True, Just id) ->
+            WebMidiApi.send { portId = id, message = message }
+
+          _ ->
+            Cmd.none
+      )
+
+
+prepareFutureNotes : Midi -> List Note
+prepareFutureNotes midi =
+  midi.tracks
+    |> List.concatMap .notes
+    |> List.sortBy .position
+
+
+sendNotes : Int -> Time -> Time -> List Note -> (List Note, Cmd Msg)
+sendNotes timeBase startTime currentTime futureNotes =
+  let
+    time =
+      currentTime - startTime
+
+    (newNotes, newFutureNotes) =
+      splitWhile
+        (\note -> positionToTime timeBase note.position < time + 1000.0)
+        []
+        futureNotes
+
+    cmd =
+      newNotes
+        |> List.map (\note -> (Basics.max 0 (positionToTime timeBase note.position - time), note))
+        |> List.concatMap (\(after, note) ->
+            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90, note.note, 100 ])
+            , Process.sleep (after + positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80, note.note, 0 ])
+            ]
+          )
+        |> Cmd.batch
+  in
+    (newFutureNotes, cmd)
+
+
+positionToTime : Int -> Int -> Time
+positionToTime timeBase position =
+  toFloat position * (1000.0 / (toFloat timeBase * 2.0))
+
+
+
+splitWhile : (a -> Bool) -> List a -> List a -> (List a, List a)
+splitWhile f taken list =
+  case list of
+    [] ->
+      (taken, [])
+
+    x :: xs ->
+      if f x then
+        splitWhile f (x :: taken) xs
+      else
+        (taken, list)
 
 
 subscriptions : Model -> Sub Msg
@@ -148,7 +232,6 @@ subscriptions model =
       else
         Sub.none
     ]
-
 
 
 view : Model -> Html Msg
