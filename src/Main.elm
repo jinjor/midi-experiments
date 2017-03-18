@@ -12,6 +12,7 @@ import SmfDecoder exposing (Smf)
 import ErrorFormatter
 import Midi exposing (Midi)
 import MidiPlayer
+import WebMidiApi exposing (MidiOut, MidiOutMessage)
 
 
 main : Program Never Model Msg
@@ -29,6 +30,8 @@ type alias Model =
   , playing : Bool
   , startTime : Time
   , currentTime : Time
+  , midiOuts : List MidiOut
+  , selectedMidiOut : Maybe String
   , error : Error
   }
 
@@ -66,11 +69,13 @@ type Msg
   | Stop
   | Tick Time
   | Timed (Time -> Msg)
+  | ReceiveMidiOuts (List MidiOut)
+  | SelectMidiOut String
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model Nothing False 0 0 NoError, Cmd.none)
+  (Model Nothing False 0 0 [] Nothing NoError, Cmd.none)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -127,13 +132,23 @@ update msg model =
     Timed toMsg ->
       ( model, Task.perform toMsg Time.now )
 
+    ReceiveMidiOuts midiOuts ->
+      ( { model | midiOuts = midiOuts }, Cmd.none )
+
+    SelectMidiOut id ->
+      ( { model | selectedMidiOut = Just id }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  if model.playing then
-    Time.every (1000 * Time.millisecond / 30) Tick
-  else
-    Sub.none
+  Sub.batch
+    [ WebMidiApi.receiveMidiOuts ReceiveMidiOuts
+    , if model.playing then
+        Time.every (1000 * Time.millisecond / 30) Tick
+      else
+        Sub.none
+    ]
+
 
 
 view : Model -> Html Msg
@@ -141,6 +156,7 @@ view model =
   div []
     [ h2 [] [ text "MIDI Player" ]
     , fileLoadButton "audio/mid" GotFile
+    , WebMidiApi.viewSelect SelectMidiOut model.midiOuts model.selectedMidiOut
     , case model.midi of
         Just midi ->
           MidiPlayer.view
