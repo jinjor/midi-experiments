@@ -11405,7 +11405,7 @@ var _user$project$MidiPlayer$viewTrack = F3(
 						{
 							ctor: '_Tuple2',
 							_0: _user$project$Midi$toKey(note),
-							_1: A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$MidiPlayer$viewNote, color, note)
+							_1: A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$MidiPlayer$viewNote, color.normal, note)
 						}) : _elm_lang$core$Maybe$Nothing;
 				},
 				track.notes));
@@ -11607,6 +11607,19 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 		}
 	};
 };
+var _user$project$MidiPlayer$Options = F3(
+	function (a, b, c) {
+		return {onBack: a, onStart: b, onStop: c};
+	});
+var _user$project$MidiPlayer$NoteColor = F2(
+	function (a, b) {
+		return {heighlight: a, normal: b};
+	});
+var _user$project$MidiPlayer$colors = A3(
+	_elm_lang$core$List$map2,
+	_user$project$MidiPlayer$NoteColor,
+	_user$project$Colors$depth(1),
+	_user$project$Colors$depth(3));
 var _user$project$MidiPlayer$view = F4(
 	function (options, playing, time, midi) {
 		var currentPosition = _elm_lang$core$Basics$floor(
@@ -11631,7 +11644,7 @@ var _user$project$MidiPlayer$view = F4(
 					A3(
 						_elm_lang$core$List$map2,
 						_user$project$MidiPlayer$viewTrack(currentPosition),
-						_user$project$Colors$depth(3),
+						_user$project$MidiPlayer$colors,
 						midi.tracks)),
 				_1: {
 					ctor: '::',
@@ -11639,10 +11652,6 @@ var _user$project$MidiPlayer$view = F4(
 					_1: {ctor: '[]'}
 				}
 			});
-	});
-var _user$project$MidiPlayer$Options = F3(
-	function (a, b, c) {
-		return {onBack: a, onStart: b, onStop: c};
 	});
 var _user$project$Main$fileLoadButton = F2(
 	function (accept_, tagger) {

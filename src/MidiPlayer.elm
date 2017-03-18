@@ -20,6 +20,17 @@ type alias Options msg =
   }
 
 
+type alias NoteColor =
+  { heighlight : String
+  , normal : String
+  }
+
+
+colors : List NoteColor
+colors =
+  List.map2 NoteColor (Colors.depth 1) (Colors.depth 3)
+
+
 view : Options msg -> Bool -> Time -> Midi -> Html msg
 view options playing time midi =
   let
@@ -28,7 +39,7 @@ view options playing time midi =
   in
     div [ HA.style [ ("position", "relative") ] ]
       [ midi.tracks
-          |> List.map2 (viewTrack currentPosition) (Colors.depth 3)
+          |> List.map2 (viewTrack currentPosition) colors
           |> svg (containerStyles currentPosition)
       , control options playing
       ]
@@ -114,12 +125,12 @@ buttonStyles =
   ]
 
 
-viewTrack : Int -> String -> Track -> Html msg
+viewTrack : Int -> NoteColor -> Track -> Html msg
 viewTrack currentPosition color track =
   track.notes
     |> List.filterMap (\note ->
       if currentPosition < note.position + note.length && currentPosition > note.position - 10000 then
-        Just (Midi.toKey note, lazy2 viewNote color note)
+        Just (Midi.toKey note, lazy2 viewNote color.normal note)
       else
         Nothing
       )
