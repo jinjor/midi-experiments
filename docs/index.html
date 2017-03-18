@@ -11392,6 +11392,10 @@ var _user$project$MidiPlayer$viewNote = F2(
 			},
 			{ctor: '[]'});
 	});
+var _user$project$MidiPlayer$noteColor = F3(
+	function (color, note, currentPosition) {
+		return ((_elm_lang$core$Native_Utils.cmp(note.position, currentPosition) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position + note.length) < 0)) ? color.highlight : color.normal;
+	});
 var _user$project$MidiPlayer$viewTrack = F3(
 	function (currentPosition, color, track) {
 		return A3(
@@ -11401,11 +11405,15 @@ var _user$project$MidiPlayer$viewTrack = F3(
 			A2(
 				_elm_lang$core$List$filterMap,
 				function (note) {
-					return ((_elm_lang$core$Native_Utils.cmp(currentPosition, note.position + note.length) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position - 10000) > 0)) ? _elm_lang$core$Maybe$Just(
+					return ((_elm_lang$core$Native_Utils.cmp(currentPosition, (note.position + note.length) + 5000) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position - 5000) > 0)) ? _elm_lang$core$Maybe$Just(
 						{
 							ctor: '_Tuple2',
 							_0: _user$project$Midi$toKey(note),
-							_1: A3(_elm_lang$html$Html_Lazy$lazy2, _user$project$MidiPlayer$viewNote, color.normal, note)
+							_1: A3(
+								_elm_lang$html$Html_Lazy$lazy2,
+								_user$project$MidiPlayer$viewNote,
+								A3(_user$project$MidiPlayer$noteColor, color, note, currentPosition),
+								note)
 						}) : _elm_lang$core$Maybe$Nothing;
 				},
 				track.notes));
@@ -11504,7 +11512,7 @@ var _user$project$MidiPlayer$controlStyles = {
 		_0: {ctor: '_Tuple2', _0: 'height', _1: '30px'},
 		_1: {
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(255, 255, 255, 0.1)'},
+			_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(255,55,25,0.18)'},
 			_1: {
 				ctor: '::',
 				_0: {ctor: '_Tuple2', _0: 'color', _1: '#eee'},
@@ -11562,7 +11570,7 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 							_elm_lang$core$Basics$toString,
 							{
 								ctor: '::',
-								_0: currentPosition,
+								_0: currentPosition - 5000,
 								_1: {
 									ctor: '::',
 									_0: 0,
@@ -11607,19 +11615,48 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 		}
 	};
 };
+var _user$project$MidiPlayer$centerLine = A2(
+	_elm_lang$html$Html$div,
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html_Attributes$style(
+			{
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'border-right', _1: 'solid 1px #555'},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'height', _1: '270px'},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'left', _1: '240px'},
+						_1: {
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'top', _1: '0'},
+							_1: {
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	},
+	{ctor: '[]'});
 var _user$project$MidiPlayer$Options = F3(
 	function (a, b, c) {
 		return {onBack: a, onStart: b, onStop: c};
 	});
 var _user$project$MidiPlayer$NoteColor = F2(
 	function (a, b) {
-		return {heighlight: a, normal: b};
+		return {highlight: a, normal: b};
 	});
 var _user$project$MidiPlayer$colors = A3(
 	_elm_lang$core$List$map2,
 	_user$project$MidiPlayer$NoteColor,
 	_user$project$Colors$depth(1),
-	_user$project$Colors$depth(3));
+	_user$project$Colors$depth(5));
 var _user$project$MidiPlayer$view = F4(
 	function (options, playing, time, midi) {
 		var currentPosition = _elm_lang$core$Basics$floor(
@@ -11648,8 +11685,12 @@ var _user$project$MidiPlayer$view = F4(
 						midi.tracks)),
 				_1: {
 					ctor: '::',
-					_0: A2(_user$project$MidiPlayer$control, options, playing),
-					_1: {ctor: '[]'}
+					_0: _user$project$MidiPlayer$centerLine,
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer$control, options, playing),
+						_1: {ctor: '[]'}
+					}
 				}
 			});
 	});
@@ -11784,7 +11825,7 @@ var _user$project$Main$update = F2(
 						'Main',
 						{
 							start: {line: 78, column: 3},
-							end: {line: 124, column: 45}
+							end: {line: 128, column: 45}
 						},
 						_p4)('failed to read arrayBuffer');
 				}

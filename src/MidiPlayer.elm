@@ -21,14 +21,14 @@ type alias Options msg =
 
 
 type alias NoteColor =
-  { heighlight : String
+  { highlight : String
   , normal : String
   }
 
 
 colors : List NoteColor
 colors =
-  List.map2 NoteColor (Colors.depth 1) (Colors.depth 3)
+  List.map2 NoteColor (Colors.depth 1) (Colors.depth 5)
 
 
 view : Options msg -> Bool -> Time -> Midi -> Html msg
@@ -41,15 +41,30 @@ view options playing time midi =
       [ midi.tracks
           |> List.map2 (viewTrack currentPosition) colors
           |> svg (containerStyles currentPosition)
+      , centerLine
       , control options playing
       ]
+
+
+centerLine : Html msg
+centerLine =
+  div
+    [ HA.style
+        [ ("border-right", "solid 1px #555")
+        , ("height", "270px")
+        , ("left", "240px")
+        , ("top", "0")
+        , ("position", "absolute")
+        ]
+    ]
+    []
 
 
 containerStyles : Int -> List (S.Attribute msg)
 containerStyles currentPosition =
   [ SA.width "10000"
   , SA.height "90"
-  , viewBox (String.join " " <| List.map toString [currentPosition, 0, 10000, 90])
+  , viewBox (String.join " " <| List.map toString [currentPosition - 5000, 0, 10000, 90])
   , preserveAspectRatio "none"
   , HA.style
       [ ("width", "480px")
@@ -73,7 +88,7 @@ controlStyles : List (String, String)
 controlStyles =
   [ ("width", "480px")
   , ("height", "30px")
-  , ("background-color", "rgba(255, 255, 255, 0.1)")
+  , ("background-color", "rgba(255,55,25,0.18)")
   , ("color", "#eee")
   , ("position", "absolute")
   , ("bottom", "0")
@@ -91,7 +106,7 @@ backButton options =
 playButton : Options msg -> Bool -> Html msg
 playButton options playing =
   controlButton
-    ( onClick (if playing then options.onStop else options.onStart ) )
+    ( onClick ( if playing then options.onStop else options.onStart ) )
     ( S.path [ SA.fill "#ddd", if playing then stop else start ] [] )
 
 
@@ -129,12 +144,20 @@ viewTrack : Int -> NoteColor -> Track -> Html msg
 viewTrack currentPosition color track =
   track.notes
     |> List.filterMap (\note ->
-      if currentPosition < note.position + note.length && currentPosition > note.position - 10000 then
-        Just (Midi.toKey note, lazy2 viewNote color.normal note)
+      if currentPosition < note.position + note.length + 5000 && currentPosition > note.position - 5000 then
+        Just (Midi.toKey note, lazy2 viewNote (noteColor color note currentPosition) note)
       else
         Nothing
       )
     |> Svg.Keyed.node "g" []
+
+
+noteColor : NoteColor -> Note -> Int -> String
+noteColor color note currentPosition =
+  if note.position < currentPosition && currentPosition < note.position + note.length then
+    color.highlight
+  else
+    color.normal
 
 
 viewNote : String -> Note -> Html msg

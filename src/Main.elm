@@ -105,7 +105,11 @@ update msg model =
 
     Start currentTime ->
       ({ model
-          | startTime = if model.currentTime > 0 then currentTime - (model.currentTime - model.startTime) else currentTime
+          | startTime =
+              if model.currentTime > 0 then
+                currentTime - (model.currentTime - model.startTime)
+              else
+                currentTime
           , currentTime = currentTime
           , playing = True
       }, Cmd.none )
