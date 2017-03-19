@@ -1,4 +1,4 @@
-module Midi exposing (Midi, Track, Note, toKey, fromSmf)
+module Midi exposing (Midi, Track, Note, Channeled, addChannel, toKey, fromSmf)
 
 import Dict exposing (Dict)
 import SmfDecoder as Smf exposing (Smf, MidiEvent(..))
@@ -11,7 +11,8 @@ type alias Midi =
 
 
 type alias Track =
-  { name : String
+  { channel : Int
+  , name : String
   , notes : List Note
   }
 
@@ -24,6 +25,20 @@ type alias Note =
   }
 
 
+type alias Channeled a =
+  { a | channel : Int }
+
+
+addChannel : Int -> Note -> Channeled Note
+addChannel channel note =
+  { position = note.position
+  , note = note.note
+  , velocity = note.velocity
+  , length = note.length
+  , channel = channel
+  }
+
+
 toKey : Note -> String
 toKey note =
   toString note.position ++ toString note.note
@@ -31,7 +46,7 @@ toKey note =
 
 emptyTrack : Track
 emptyTrack =
-  Track "" []
+  Track 0 "" []
 
 
 fromSmf : Smf -> Midi
@@ -46,9 +61,9 @@ fromSmfTrack track =
   track.events
     |> List.foldl updateTrack (0, initContext)
     |> Tuple.second
-    |> .notes
-    |> List.reverse
-    |> (\notes -> Track "" notes)
+    |> (\context ->
+      Track context.channel "" (List.reverse context.notes)
+    )
 
 
 updateTrack : (Int, MidiEvent) -> (Int, Context) -> (Int, Context)
@@ -57,7 +72,8 @@ updateTrack (dtime, e) (position, context) =
   , case e of
       NoteOn ch note vel ->
         { context
-          | temporaryNotes =
+          | channel = max ch context.channel
+          , temporaryNotes =
               context.temporaryNotes
                 |> Dict.insert note (position + dtime, vel)
         }
@@ -81,11 +97,12 @@ updateTrack (dtime, e) (position, context) =
 
 
 type alias Context =
-  { temporaryNotes : Dict Int (Int, Int)
+  { channel : Int
+  , temporaryNotes : Dict Int (Int, Int)
   , notes : List Note
   }
 
 
 initContext : Context
 initContext =
-  Context Dict.empty []
+  Context 0 Dict.empty []

@@ -12,7 +12,7 @@ import BinaryDecoder.File as File exposing (File)
 import BinaryDecoder.Byte as Byte exposing (ArrayBuffer, Error)
 import SmfDecoder exposing (Smf)
 import ErrorFormatter
-import Midi exposing (Midi, Note)
+import Midi exposing (Midi, Note, Channeled)
 import MidiPlayer
 import WebMidiApi exposing (MidiOut, MidiOutMessage)
 
@@ -32,7 +32,7 @@ type alias Model =
   , playing : Bool
   , startTime : Time
   , currentTime : Time
-  , futureNotes : List Note
+  , futureNotes : List (Channeled Note)
   , midiOuts : List MidiOut
   , selectedMidiOut : Maybe String
   , error : Error
@@ -172,14 +172,14 @@ update msg model =
       )
 
 
-prepareFutureNotes : Midi -> List Note
+prepareFutureNotes : Midi -> List (Channeled Note)
 prepareFutureNotes midi =
   midi.tracks
-    |> List.concatMap .notes
+    |> List.concatMap (\track -> List.map (Midi.addChannel track.channel) track.notes )
     |> List.sortBy .position
 
 
-sendNotes : Int -> Time -> Time -> List Note -> (List Note, Cmd Msg)
+sendNotes : Int -> Time -> Time -> List (Channeled Note) -> (List (Channeled Note), Cmd Msg)
 sendNotes timeBase startTime currentTime futureNotes =
   let
     time =
@@ -195,8 +195,8 @@ sendNotes timeBase startTime currentTime futureNotes =
       newNotes
         |> List.map (\note -> (Basics.max 0 (positionToTime timeBase note.position - time), note))
         |> List.concatMap (\(after, note) ->
-            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90, note.note, note.velocity ])
-            , Process.sleep (after + positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80, note.note, 0 ])
+            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90 + note.channel, note.note, note.velocity ])
+            , Process.sleep (after + positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80 + note.channel, note.note, 0 ])
             ]
           )
         |> Cmd.batch

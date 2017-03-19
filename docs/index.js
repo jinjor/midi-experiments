@@ -11312,16 +11312,21 @@ var _user$project$Midi$toKey = function (note) {
 		_elm_lang$core$Basics$toString(note.position),
 		_elm_lang$core$Basics$toString(note.note));
 };
+var _user$project$Midi$addChannel = F2(
+	function (channel, note) {
+		return {position: note.position, note: note.note, velocity: note.velocity, length: note.length, channel: channel};
+	});
 var _user$project$Midi$Midi = F2(
 	function (a, b) {
 		return {timeBase: a, tracks: b};
 	});
-var _user$project$Midi$Track = F2(
-	function (a, b) {
-		return {name: a, notes: b};
+var _user$project$Midi$Track = F3(
+	function (a, b, c) {
+		return {channel: a, name: b, notes: c};
 	});
-var _user$project$Midi$emptyTrack = A2(
+var _user$project$Midi$emptyTrack = A3(
 	_user$project$Midi$Track,
+	0,
 	'',
 	{ctor: '[]'});
 var _user$project$Midi$Note = F4(
@@ -11345,6 +11350,7 @@ var _user$project$Midi$updateTrack = F2(
 						return _elm_lang$core$Native_Utils.update(
 							_p9,
 							{
+								channel: A2(_elm_lang$core$Basics$max, _p4._0, _p9.channel),
 								temporaryNotes: A3(
 									_elm_lang$core$Dict$insert,
 									_p4._1,
@@ -11379,28 +11385,29 @@ var _user$project$Midi$updateTrack = F2(
 			}()
 		};
 	});
-var _user$project$Midi$Context = F2(
-	function (a, b) {
-		return {temporaryNotes: a, notes: b};
+var _user$project$Midi$Context = F3(
+	function (a, b, c) {
+		return {channel: a, temporaryNotes: b, notes: c};
 	});
-var _user$project$Midi$initContext = A2(
+var _user$project$Midi$initContext = A3(
 	_user$project$Midi$Context,
+	0,
 	_elm_lang$core$Dict$empty,
 	{ctor: '[]'});
 var _user$project$Midi$fromSmfTrack = function (track) {
-	return function (notes) {
-		return A2(_user$project$Midi$Track, '', notes);
+	return function (context) {
+		return A3(
+			_user$project$Midi$Track,
+			context.channel,
+			'',
+			_elm_lang$core$List$reverse(context.notes));
 	}(
-		_elm_lang$core$List$reverse(
-			function (_) {
-				return _.notes;
-			}(
-				_elm_lang$core$Tuple$second(
-					A3(
-						_elm_lang$core$List$foldl,
-						_user$project$Midi$updateTrack,
-						{ctor: '_Tuple2', _0: 0, _1: _user$project$Midi$initContext},
-						track.events)))));
+		_elm_lang$core$Tuple$second(
+			A3(
+				_elm_lang$core$List$foldl,
+				_user$project$Midi$updateTrack,
+				{ctor: '_Tuple2', _0: 0, _1: _user$project$Midi$initContext},
+				track.events)));
 };
 var _user$project$Midi$fromSmf = function (smf) {
 	return A2(
@@ -11883,8 +11890,11 @@ var _user$project$Main$prepareFutureNotes = function (midi) {
 		},
 		A2(
 			_elm_lang$core$List$concatMap,
-			function (_) {
-				return _.notes;
+			function (track) {
+				return A2(
+					_elm_lang$core$List$map,
+					_user$project$Midi$addChannel(track.channel),
+					track.notes);
 			},
 			midi.tracks));
 };
@@ -11973,7 +11983,7 @@ var _user$project$Main$sendNotes = F4(
 								return _user$project$Main$Send(
 									{
 										ctor: '::',
-										_0: 144,
+										_0: 144 + _p12.channel,
 										_1: {
 											ctor: '::',
 											_0: _p12.note,
@@ -11994,7 +12004,7 @@ var _user$project$Main$sendNotes = F4(
 									return _user$project$Main$Send(
 										{
 											ctor: '::',
-											_0: 128,
+											_0: 128 + _p12.channel,
 											_1: {
 												ctor: '::',
 												_0: _p12.note,
