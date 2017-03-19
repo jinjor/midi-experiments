@@ -11921,6 +11921,11 @@ var _user$project$WebMidiApi$viewSelect = F3(
 				_user$project$WebMidiApi$viewOption(selectedMidiOut),
 				midiOuts));
 	});
+var _user$project$WebMidiApi$requestMidiOuts = _elm_lang$core$Native_Platform.outgoingPort(
+	'requestMidiOuts',
+	function (v) {
+		return null;
+	});
 var _user$project$WebMidiApi$send = _elm_lang$core$Native_Platform.outgoingPort(
 	'send',
 	function (v) {
@@ -12227,7 +12232,8 @@ var _user$project$Main$update = F2(
 										midi: _elm_lang$core$Maybe$Just(
 											_user$project$Midi$fromSmf(_p14._0))
 									}),
-								_1: _elm_lang$core$Platform_Cmd$none
+								_1: _user$project$WebMidiApi$requestMidiOuts(
+									{ctor: '_Tuple0'})
 							};
 						} else {
 							return {
@@ -12245,7 +12251,7 @@ var _user$project$Main$update = F2(
 							'Main',
 							{
 								start: {line: 88, column: 3},
-								end: {line: 178, column: 8}
+								end: {line: 180, column: 8}
 							},
 							_p13)('failed to read arrayBuffer');
 					}

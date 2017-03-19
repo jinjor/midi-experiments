@@ -16,6 +16,7 @@ type alias MidiOutMessage =
   }
 
 
+port requestMidiOuts : () -> Cmd msg
 port send : MidiOutMessage -> Cmd msg
 
 

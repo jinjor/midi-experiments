@@ -73,7 +73,7 @@ type Msg
   | Tick Time
   | Timed (Time -> Msg)
   | ReceiveMidiOuts (List MidiOut)
-  | SelectMidiOut String
+  | SelectMidiOut Int String
   | Send WebMidiApi.MidiMessage
   | ToggleTrack Int
 
@@ -94,9 +94,11 @@ update msg model =
     ReadBuffer (Ok buf) ->
       case Byte.decode SmfDecoder.smf buf of
         Ok smf ->
-          ({ model
-             | midi = Just (Midi.fromSmf smf)
-          }, Cmd.none)
+          ( { model
+              | midi = Just (Midi.fromSmf smf)
+            }
+          , WebMidiApi.requestMidiOuts ()
+          )
 
         Err e ->
           ({ model
@@ -159,8 +161,10 @@ update msg model =
       , Cmd.none
       )
 
-    SelectMidiOut id ->
-      ( { model | selectedMidiOut = Just id }, Cmd.none )
+    SelectMidiOut index portId ->
+      ( { model | midi = Just (Midi.setMidiOut index portId <| get .midi model) }
+      , Cmd.none
+      )
 
     Send message ->
       ( model
@@ -240,7 +244,7 @@ view model =
   div []
     [ h2 [] [ text "MIDI Player" ]
     , fileLoadButton "audio/mid" GotFile
-    , WebMidiApi.viewSelect SelectMidiOut model.midiOuts model.selectedMidiOut
+    -- , WebMidiApi.viewSelect (SelectMidiOut 0) model.midiOuts model.selectedMidiOut
     , case model.midi of
         Just midi ->
           MidiPlayer.view

@@ -4,7 +4,7 @@ module Midi exposing
   , toKey
   , fromSmf
   , positionToTime, timeToPosition
-  , toggleVisibility
+  , toggleVisibility, setMidiOut
   )
 
 import Time exposing (Time)
@@ -136,6 +136,20 @@ toggleVisibility index midi =
           |> List.indexedMap (\i track ->
               if i == index then
                 { track | isVisible = not track.isVisible }
+              else
+                track
+            )
+  }
+
+
+setMidiOut : Int -> String -> Midi -> Midi
+setMidiOut index portId midi =
+  { midi
+    | tracks =
+        midi.tracks
+          |> List.indexedMap (\i track ->
+              if i == index then
+                { track | portId = Just portId }
               else
                 track
             )
