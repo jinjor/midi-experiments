@@ -11324,9 +11324,9 @@ var _user$project$Midi$emptyTrack = A2(
 	_user$project$Midi$Track,
 	'',
 	{ctor: '[]'});
-var _user$project$Midi$Note = F3(
-	function (a, b, c) {
-		return {position: a, note: b, length: c};
+var _user$project$Midi$Note = F4(
+	function (a, b, c, d) {
+		return {position: a, note: b, velocity: c, length: d};
 	});
 var _user$project$Midi$updateTrack = F2(
 	function (_p1, _p0) {
@@ -11367,7 +11367,7 @@ var _user$project$Midi$updateTrack = F2(
 											var _p7 = _p6._0;
 											return {
 												ctor: '::',
-												_0: A3(_user$project$Midi$Note, _p7, _p8, (_p10 + _p11) - _p7),
+												_0: A4(_user$project$Midi$Note, _p7, _p8, _p6._1, (_p10 + _p11) - _p7),
 												_1: _p9.notes
 											};
 										},
@@ -11979,7 +11979,7 @@ var _user$project$Main$sendNotes = F4(
 											_0: _p12.note,
 											_1: {
 												ctor: '::',
-												_0: 100,
+												_0: _p12.velocity,
 												_1: {ctor: '[]'}
 											}
 										}

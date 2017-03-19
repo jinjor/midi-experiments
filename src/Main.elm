@@ -195,7 +195,7 @@ sendNotes timeBase startTime currentTime futureNotes =
       newNotes
         |> List.map (\note -> (Basics.max 0 (positionToTime timeBase note.position - time), note))
         |> List.concatMap (\(after, note) ->
-            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90, note.note, 100 ])
+            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90, note.note, note.velocity ])
             , Process.sleep (after + positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80, note.note, 0 ])
             ]
           )

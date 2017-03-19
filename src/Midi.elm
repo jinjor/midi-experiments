@@ -19,6 +19,7 @@ type alias Track =
 type alias Note =
   { position : Int
   , note : Int
+  , velocity : Int
   , length : Int
   }
 
@@ -57,7 +58,8 @@ updateTrack (dtime, e) (position, context) =
       NoteOn ch note vel ->
         { context
           | temporaryNotes =
-              Dict.insert note (position + dtime, vel) context.temporaryNotes
+              context.temporaryNotes
+                |> Dict.insert note (position + dtime, vel)
         }
 
       NoteOff ch note ->
@@ -67,7 +69,7 @@ updateTrack (dtime, e) (position, context) =
           , notes =
               Dict.get note context.temporaryNotes
                 |> Maybe.map (\(startPos, vel) ->
-                    Note startPos note (position + dtime - startPos)
+                    Note startPos note vel (position + dtime - startPos)
                       :: context.notes
                   )
                 |> Maybe.withDefault context.notes
