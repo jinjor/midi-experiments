@@ -75,6 +75,7 @@ type Msg
   | ReceiveMidiOuts (List MidiOut)
   | SelectMidiOut String
   | Send WebMidiApi.MidiMessage
+  | ToggleTrack Int
 
 
 init : (Model, Cmd Msg)
@@ -171,6 +172,11 @@ update msg model =
             Cmd.none
       )
 
+    ToggleTrack index ->
+      ( { model | midi = Just (Midi.toggleVisibility index <| get .midi model) }
+      , Cmd.none
+      )
+
 
 prepareFutureNotes : Midi -> List (Channeled Note)
 prepareFutureNotes midi =
@@ -187,26 +193,21 @@ sendNotes timeBase startTime currentTime futureNotes =
 
     (newNotes, newFutureNotes) =
       splitWhile
-        (\note -> positionToTime timeBase note.position < time + 1000.0)
+        (\note -> Midi.positionToTime timeBase note.position < time + 1000.0)
         []
         futureNotes
 
     cmd =
       newNotes
-        |> List.map (\note -> (Basics.max 0 (positionToTime timeBase note.position - time), note))
+        |> List.map (\note -> (Basics.max 0 (Midi.positionToTime timeBase note.position - time), note))
         |> List.concatMap (\(after, note) ->
             [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90 + note.channel, note.note, note.velocity ])
-            , Process.sleep (after + positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80 + note.channel, note.note, 0 ])
+            , Process.sleep (after + Midi.positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80 + note.channel, note.note, 0 ])
             ]
           )
         |> Cmd.batch
   in
     (newFutureNotes, cmd)
-
-
-positionToTime : Int -> Int -> Time
-positionToTime timeBase position =
-  toFloat position * (1000.0 / (toFloat timeBase * 2.0))
 
 
 
@@ -246,6 +247,7 @@ view model =
             { onBack = Back
             , onStart = Timed Start
             , onStop = Stop
+            , onToggleTrack = ToggleTrack
             }
             model.playing
             (model.currentTime - model.startTime)

@@ -1,5 +1,13 @@
-module Midi exposing (Midi, Track, Note, Channeled, addChannel, toKey, fromSmf)
+module Midi exposing
+  ( Midi, Track, Note
+  , Channeled, addChannel
+  , toKey
+  , fromSmf
+  , positionToTime, timeToPosition
+  , toggleVisibility
+  )
 
+import Time exposing (Time)
 import Dict exposing (Dict)
 import SmfDecoder as Smf exposing (Smf, MidiEvent(..))
 
@@ -14,6 +22,8 @@ type alias Track =
   { channel : Int
   , name : String
   , notes : List Note
+  , isVisible : Bool
+  , portId : Maybe String
   }
 
 
@@ -46,7 +56,7 @@ toKey note =
 
 emptyTrack : Track
 emptyTrack =
-  Track 0 "" []
+  Track 0 "" [] False Nothing
 
 
 fromSmf : Smf -> Midi
@@ -62,7 +72,7 @@ fromSmfTrack track =
     |> List.foldl updateTrack (0, initContext)
     |> Tuple.second
     |> (\context ->
-      Track context.channel "" (List.reverse context.notes)
+      Track context.channel "" (List.reverse context.notes) True Nothing
     )
 
 
@@ -106,3 +116,27 @@ type alias Context =
 initContext : Context
 initContext =
   Context 0 Dict.empty []
+
+
+positionToTime : Int -> Int -> Time
+positionToTime timeBase position =
+  toFloat position * (1000.0 / (toFloat timeBase * 2.0))
+
+
+timeToPosition : Int -> Time -> Int
+timeToPosition timeBase time =
+  floor <| (toFloat timeBase * 2.0 / 1000) * time
+
+
+toggleVisibility : Int -> Midi -> Midi
+toggleVisibility index midi =
+  { midi
+    | tracks =
+        midi.tracks
+          |> List.indexedMap (\i track ->
+              if i == index then
+                { track | isVisible = not track.isVisible }
+              else
+                track
+            )
+  }

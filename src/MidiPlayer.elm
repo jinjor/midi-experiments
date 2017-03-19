@@ -17,6 +17,7 @@ type alias Options msg =
   { onBack : msg
   , onStart : msg
   , onStop : msg
+  , onToggleTrack : Int -> msg
   }
 
 
@@ -35,14 +36,14 @@ view : Options msg -> Bool -> Time -> Midi -> Html msg
 view options playing time midi =
   let
     currentPosition =
-      floor <| (toFloat midi.timeBase * 2.0 / 1000) * time
+      Midi.timeToPosition midi.timeBase time
   in
     div [ HA.style [ ("position", "relative") ] ]
       [ midi.tracks
           |> List.map2 (viewTrack currentPosition) colors
           |> svg (containerStyles currentPosition)
       , centerLine
-      , control options playing
+      , control options midi.tracks playing
       ]
 
 
@@ -75,12 +76,13 @@ containerStyles currentPosition =
   ]
 
 
-control : Options msg -> Bool -> Html msg
-control options playing =
+control : Options msg -> List Track -> Bool -> Html msg
+control options tracks playing =
   div
     [ HA.style controlStyles ]
     [ backButton options
     , playButton options playing
+    , trackButtons options tracks
     ]
 
 
@@ -108,6 +110,32 @@ playButton options playing =
   controlButton
     ( onClick ( if playing then options.onStop else options.onStart ) )
     ( S.path [ SA.fill "#ddd", if playing then stop else start ] [] )
+
+
+trackButtons : Options msg -> List Track -> Html msg
+trackButtons options tracks =
+  tracks
+    |> List.map2 (,) colors
+    |> List.indexedMap (trackButton options)
+    |> div [ HA.style [ ("display", "flex"), ("margin-left", "auto"), ("padding-right", "10px") ] ]
+
+
+trackButton : Options msg -> Int -> (NoteColor, Track) -> Html msg
+trackButton options index (color, track) =
+  div
+    [ onClick (options.onToggleTrack index)
+    , HA.style (trackButtonStyles track.isVisible)
+    ]
+    [ div [ HA.style [ ("background-color", color.normal), ("height", "100%") ] ] [] ]
+
+
+trackButtonStyles : Bool -> List (String, String)
+trackButtonStyles isVisible =
+  [ ("padding", if isVisible then "9px 4px" else "13px 8px")
+  , ("box-sizing", "border-box")
+  , ("width", "20px")
+  , ("height", "30px")
+  ]
 
 
 controlButton : H.Attribute msg -> Svg msg -> Html msg
@@ -142,14 +170,17 @@ buttonStyles =
 
 viewTrack : Int -> NoteColor -> Track -> Html msg
 viewTrack currentPosition color track =
-  track.notes
-    |> List.filterMap (\note ->
-      if currentPosition < note.position + note.length + 5000 && currentPosition > note.position - 5000 then
-        Just (Midi.toKey note, lazy2 viewNote (noteColor color note currentPosition) note)
-      else
-        Nothing
-      )
-    |> Svg.Keyed.node "g" []
+  if track.isVisible then
+    track.notes
+      |> List.filterMap (\note ->
+        if currentPosition < note.position + note.length + 5000 && currentPosition > note.position - 5000 then
+          Just (Midi.toKey note, lazy2 viewNote (noteColor color note currentPosition) note)
+        else
+          Nothing
+        )
+      |> Svg.Keyed.node "g" []
+  else
+    Svg.Keyed.node "g" [] []
 
 
 noteColor : NoteColor -> Note -> Int -> String
