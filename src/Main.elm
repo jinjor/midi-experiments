@@ -35,6 +35,7 @@ type alias Model =
   , futureNotes : List (Channeled Note)
   , midiOuts : List MidiOut
   , selectedMidiOut : Maybe String
+  , showConfig : Bool
   , error : Error
   }
 
@@ -76,11 +77,12 @@ type Msg
   | SelectMidiOut Int String
   | Send WebMidiApi.MidiMessage
   | ToggleTrack Int
+  | ToggleConfig
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model Nothing False 0 0 [] [] Nothing NoError, Cmd.none)
+  (Model Nothing False 0 0 [] [] Nothing False NoError, Cmd.none)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -181,6 +183,11 @@ update msg model =
       , Cmd.none
       )
 
+    ToggleConfig ->
+      ( { model | showConfig = not model.showConfig }
+      , Cmd.none
+      )
+
 
 prepareFutureNotes : Midi -> List (Channeled Note)
 prepareFutureNotes midi =
@@ -252,7 +259,11 @@ view model =
             , onStart = Timed Start
             , onStop = Stop
             , onToggleTrack = ToggleTrack
+            , onToggleConfig = ToggleConfig
+            , onSelectMidiOut = SelectMidiOut
             }
+            model.showConfig
+            model.midiOuts
             model.playing
             (model.currentTime - model.startTime)
             midi

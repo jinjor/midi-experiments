@@ -11463,469 +11463,6 @@ var _user$project$Midi$fromSmf = function (smf) {
 		A2(_elm_lang$core$List$map, _user$project$Midi$fromSmfTrack, smf.tracks));
 };
 
-var _user$project$MidiPlayer$px = function (num) {
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(num),
-		'px');
-};
-var _user$project$MidiPlayer$viewNote = F2(
-	function (color, note) {
-		return A2(
-			_elm_lang$svg$Svg$rect,
-			{
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$x(
-					_elm_lang$core$Basics$toString(note.position)),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$y(
-						_elm_lang$core$Basics$toString(90 - ((note.note - 60) + 45))),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$width(
-							_elm_lang$core$Basics$toString(note.length)),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$height('1'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$svg$Svg_Attributes$fill(color),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}
-			},
-			{ctor: '[]'});
-	});
-var _user$project$MidiPlayer$noteColor = F3(
-	function (color, note, currentPosition) {
-		return ((_elm_lang$core$Native_Utils.cmp(note.position, currentPosition) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position + note.length) < 0)) ? color.highlight : color.normal;
-	});
-var _user$project$MidiPlayer$viewTrack = F3(
-	function (currentPosition, color, track) {
-		return track.isVisible ? A3(
-			_elm_lang$svg$Svg_Keyed$node,
-			'g',
-			{ctor: '[]'},
-			A2(
-				_elm_lang$core$List$filterMap,
-				function (note) {
-					return ((_elm_lang$core$Native_Utils.cmp(currentPosition, (note.position + note.length) + 5000) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position - 5000) > 0)) ? _elm_lang$core$Maybe$Just(
-						{
-							ctor: '_Tuple2',
-							_0: _user$project$Midi$toKey(note),
-							_1: A3(
-								_elm_lang$html$Html_Lazy$lazy2,
-								_user$project$MidiPlayer$viewNote,
-								A3(_user$project$MidiPlayer$noteColor, color, note, currentPosition),
-								note)
-						}) : _elm_lang$core$Maybe$Nothing;
-				},
-				track.notes)) : A3(
-			_elm_lang$svg$Svg_Keyed$node,
-			'g',
-			{ctor: '[]'},
-			{ctor: '[]'});
-	});
-var _user$project$MidiPlayer$buttonStyles = {
-	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: 'width', _1: '40px'},
-	_1: {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'bottom', _1: '0'},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
-			_1: {ctor: '[]'}
-		}
-	}
-};
-var _user$project$MidiPlayer$config = _elm_lang$svg$Svg_Attributes$d('M24,11L22,13.5L22,16.5L24,19L23,20.8L19.8,20.3L17.2,21.8L16,24.8L14,24.8L12.8,21.8L10.2,20.3L7,20.8L6,19L8,16.5L8,13.5L6,11L7,9.2L10.2,9.7L12.8,8.2L14,5.2L16,5.2L17.2,8.2L19.8,9.7L23,9.2zM19,15L17.8,12.2L15,11L12.2,12.2L11,15L12.2,17.8L15,19L17.8,17.8z');
-var _user$project$MidiPlayer$stop = _elm_lang$svg$Svg_Attributes$d('M10,8v14h4v-14zm10,0v14h4v-14z');
-var _user$project$MidiPlayer$start = _elm_lang$svg$Svg_Attributes$d('M10,8v14l16,-7z');
-var _user$project$MidiPlayer$back = _elm_lang$svg$Svg_Attributes$d('M12,10v10h2v-10zm14,0v10l-12,-5z');
-var _user$project$MidiPlayer$controlButton = F2(
-	function (event, inner) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: event,
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$buttonStyles),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$svg$Svg$svg,
-					{
-						ctor: '::',
-						_0: _elm_lang$svg$Svg_Attributes$width('40'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$svg$Svg_Attributes$height('30'),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: inner,
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			});
-	});
-var _user$project$MidiPlayer$trackButtonStyles = function (isVisible) {
-	return {
-		ctor: '::',
-		_0: {
-			ctor: '_Tuple2',
-			_0: 'padding',
-			_1: isVisible ? '9px 4px' : '13px 8px'
-		},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'box-sizing', _1: 'border-box'},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'width', _1: '20px'},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'height', _1: '30px'},
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	};
-};
-var _user$project$MidiPlayer$trackButton = F3(
-	function (options, index, _p0) {
-		var _p1 = _p0;
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onClick(
-					options.onToggleTrack(index)),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$style(
-						_user$project$MidiPlayer$trackButtonStyles(_p1._1.isVisible)),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'background-color', _1: _p1._0.normal},
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'height', _1: '100%'},
-									_1: {ctor: '[]'}
-								}
-							}),
-						_1: {ctor: '[]'}
-					},
-					{ctor: '[]'}),
-				_1: {ctor: '[]'}
-			});
-	});
-var _user$project$MidiPlayer$configButton = function (options) {
-	return A2(
-		_user$project$MidiPlayer$controlButton,
-		_elm_lang$html$Html_Events$onClick(options.onBack),
-		A2(
-			_elm_lang$svg$Svg$path,
-			{
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
-				_1: {
-					ctor: '::',
-					_0: _user$project$MidiPlayer$config,
-					_1: {ctor: '[]'}
-				}
-			},
-			{ctor: '[]'}));
-};
-var _user$project$MidiPlayer$playButton = F2(
-	function (options, playing) {
-		return A2(
-			_user$project$MidiPlayer$controlButton,
-			_elm_lang$html$Html_Events$onClick(
-				playing ? options.onStop : options.onStart),
-			A2(
-				_elm_lang$svg$Svg$path,
-				{
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
-					_1: {
-						ctor: '::',
-						_0: playing ? _user$project$MidiPlayer$stop : _user$project$MidiPlayer$start,
-						_1: {ctor: '[]'}
-					}
-				},
-				{ctor: '[]'}));
-	});
-var _user$project$MidiPlayer$backButton = function (options) {
-	return A2(
-		_user$project$MidiPlayer$controlButton,
-		_elm_lang$html$Html_Events$onClick(options.onBack),
-		A2(
-			_elm_lang$svg$Svg$path,
-			{
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
-				_1: {
-					ctor: '::',
-					_0: _user$project$MidiPlayer$back,
-					_1: {ctor: '[]'}
-				}
-			},
-			{ctor: '[]'}));
-};
-var _user$project$MidiPlayer$controlStyles = {
-	ctor: '::',
-	_0: {ctor: '_Tuple2', _0: 'width', _1: '480px'},
-	_1: {
-		ctor: '::',
-		_0: {ctor: '_Tuple2', _0: 'height', _1: '30px'},
-		_1: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(255,55,25,0.18)'},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'color', _1: '#eee'},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'bottom', _1: '0'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}
-		}
-	}
-};
-var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
-	return {
-		ctor: '::',
-		_0: _elm_lang$svg$Svg_Attributes$width('10000'),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$svg$Svg_Attributes$height('90'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$svg$Svg_Attributes$viewBox(
-					A2(
-						_elm_lang$core$String$join,
-						' ',
-						A2(
-							_elm_lang$core$List$map,
-							_elm_lang$core$Basics$toString,
-							{
-								ctor: '::',
-								_0: currentPosition - 5000,
-								_1: {
-									ctor: '::',
-									_0: 0,
-									_1: {
-										ctor: '::',
-										_0: 10000,
-										_1: {
-											ctor: '::',
-											_0: 90,
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}))),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$svg$Svg_Attributes$preserveAspectRatio('none'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$style(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'width', _1: '480px'},
-								_1: {
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'height', _1: '270px'},
-									_1: {
-										ctor: '::',
-										_0: {ctor: '_Tuple2', _0: 'background-color', _1: 'black'},
-										_1: {
-											ctor: '::',
-											_0: {ctor: '_Tuple2', _0: 'display', _1: 'block'},
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		}
-	};
-};
-var _user$project$MidiPlayer$centerLine = A2(
-	_elm_lang$html$Html$div,
-	{
-		ctor: '::',
-		_0: _elm_lang$html$Html_Attributes$style(
-			{
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'border-right', _1: 'solid 1px #555'},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'height', _1: '270px'},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'left', _1: '240px'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'top', _1: '0'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
-								_1: {ctor: '[]'}
-							}
-						}
-					}
-				}
-			}),
-		_1: {ctor: '[]'}
-	},
-	{ctor: '[]'});
-var _user$project$MidiPlayer$Options = F4(
-	function (a, b, c, d) {
-		return {onBack: a, onStart: b, onStop: c, onToggleTrack: d};
-	});
-var _user$project$MidiPlayer$NoteColor = F2(
-	function (a, b) {
-		return {highlight: a, normal: b};
-	});
-var _user$project$MidiPlayer$colors = A3(
-	_elm_lang$core$List$map2,
-	_user$project$MidiPlayer$NoteColor,
-	_user$project$Colors$depth(1),
-	_user$project$Colors$depth(5));
-var _user$project$MidiPlayer$trackButtons = F2(
-	function (options, tracks) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$style(
-					{
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
-						_1: {
-							ctor: '::',
-							_0: {ctor: '_Tuple2', _0: 'margin-left', _1: 'auto'},
-							_1: {
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'padding-right', _1: '10px'},
-								_1: {ctor: '[]'}
-							}
-						}
-					}),
-				_1: {ctor: '[]'}
-			},
-			A2(
-				_elm_lang$core$List$indexedMap,
-				_user$project$MidiPlayer$trackButton(options),
-				A3(
-					_elm_lang$core$List$map2,
-					F2(
-						function (v0, v1) {
-							return {ctor: '_Tuple2', _0: v0, _1: v1};
-						}),
-					_user$project$MidiPlayer$colors,
-					tracks)));
-	});
-var _user$project$MidiPlayer$control = F3(
-	function (options, tracks, playing) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$controlStyles),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: _user$project$MidiPlayer$backButton(options),
-				_1: {
-					ctor: '::',
-					_0: A2(_user$project$MidiPlayer$playButton, options, playing),
-					_1: {
-						ctor: '::',
-						_0: A2(_user$project$MidiPlayer$trackButtons, options, tracks),
-						_1: {
-							ctor: '::',
-							_0: _user$project$MidiPlayer$configButton(options),
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			});
-	});
-var _user$project$MidiPlayer$view = F4(
-	function (options, playing, time, midi) {
-		var currentPosition = A2(_user$project$Midi$timeToPosition, midi.timeBase, time);
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$style(
-					{
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'position', _1: 'relative'},
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$svg$Svg$svg,
-					_user$project$MidiPlayer$containerStyles(currentPosition),
-					A3(
-						_elm_lang$core$List$map2,
-						_user$project$MidiPlayer$viewTrack(currentPosition),
-						_user$project$MidiPlayer$colors,
-						midi.tracks)),
-				_1: {
-					ctor: '::',
-					_0: _user$project$MidiPlayer$centerLine,
-					_1: {
-						ctor: '::',
-						_0: A3(_user$project$MidiPlayer$control, options, midi.tracks, playing),
-						_1: {ctor: '[]'}
-					}
-				}
-			});
-	});
-
 var _user$project$WebMidiApi$onChange = function (toMsg) {
 	return A2(
 		_elm_lang$html$Html_Events$on,
@@ -11999,6 +11536,543 @@ var _user$project$WebMidiApi$MidiOutMessage = F2(
 var _user$project$WebMidiApi$MidiOut = F2(
 	function (a, b) {
 		return {id: a, name: b};
+	});
+
+var _user$project$MidiPlayer$px = function (num) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(num),
+		'px');
+};
+var _user$project$MidiPlayer_ops = _user$project$MidiPlayer_ops || {};
+_user$project$MidiPlayer_ops['=>'] = F2(
+	function (v0, v1) {
+		return {ctor: '_Tuple2', _0: v0, _1: v1};
+	});
+var _user$project$MidiPlayer$viewNote = F2(
+	function (color, note) {
+		return A2(
+			_elm_lang$svg$Svg$rect,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$x(
+					_elm_lang$core$Basics$toString(note.position)),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$y(
+						_elm_lang$core$Basics$toString(90 - ((note.note - 60) + 45))),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width(
+							_elm_lang$core$Basics$toString(note.length)),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$height('1'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$svg$Svg_Attributes$fill(color),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			},
+			{ctor: '[]'});
+	});
+var _user$project$MidiPlayer$noteColor = F3(
+	function (color, note, currentPosition) {
+		return ((_elm_lang$core$Native_Utils.cmp(note.position, currentPosition) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position + note.length) < 0)) ? color.highlight : color.normal;
+	});
+var _user$project$MidiPlayer$viewTrack = F3(
+	function (currentPosition, color, track) {
+		return track.isVisible ? A3(
+			_elm_lang$svg$Svg_Keyed$node,
+			'g',
+			{ctor: '[]'},
+			A2(
+				_elm_lang$core$List$filterMap,
+				function (note) {
+					return ((_elm_lang$core$Native_Utils.cmp(currentPosition, (note.position + note.length) + 5000) < 0) && (_elm_lang$core$Native_Utils.cmp(currentPosition, note.position - 5000) > 0)) ? _elm_lang$core$Maybe$Just(
+						{
+							ctor: '_Tuple2',
+							_0: _user$project$Midi$toKey(note),
+							_1: A3(
+								_elm_lang$html$Html_Lazy$lazy2,
+								_user$project$MidiPlayer$viewNote,
+								A3(_user$project$MidiPlayer$noteColor, color, note, currentPosition),
+								note)
+						}) : _elm_lang$core$Maybe$Nothing;
+				},
+				track.notes)) : A3(
+			_elm_lang$svg$Svg_Keyed$node,
+			'g',
+			{ctor: '[]'},
+			{ctor: '[]'});
+	});
+var _user$project$MidiPlayer$configStyles = {
+	ctor: '::',
+	_0: A2(_user$project$MidiPlayer_ops['=>'], 'padding', '10px'),
+	_1: {
+		ctor: '::',
+		_0: A2(_user$project$MidiPlayer_ops['=>'], 'box-sizing', 'border-box'),
+		_1: {
+			ctor: '::',
+			_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$MidiPlayer_ops['=>'], 'box-shadow', 'inset rgba(0,0,0,0.4) 0px 4px 7px'),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	}
+};
+var _user$project$MidiPlayer$buttonStyles = {
+	ctor: '::',
+	_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '40px'),
+	_1: {
+		ctor: '::',
+		_0: A2(_user$project$MidiPlayer_ops['=>'], 'bottom', '0'),
+		_1: {
+			ctor: '::',
+			_0: A2(_user$project$MidiPlayer_ops['=>'], 'text-align', 'center'),
+			_1: {ctor: '[]'}
+		}
+	}
+};
+var _user$project$MidiPlayer$config = _elm_lang$svg$Svg_Attributes$d('M24,11L22,13.5L22,16.5L24,19L23,20.8L19.8,20.3L17.2,21.8L16,24.8L14,24.8L12.8,21.8L10.2,20.3L7,20.8L6,19L8,16.5L8,13.5L6,11L7,9.2L10.2,9.7L12.8,8.2L14,5.2L16,5.2L17.2,8.2L19.8,9.7L23,9.2zM19,15L17.8,12.2L15,11L12.2,12.2L11,15L12.2,17.8L15,19L17.8,17.8z');
+var _user$project$MidiPlayer$stop = _elm_lang$svg$Svg_Attributes$d('M10,8v14h4v-14zm10,0v14h4v-14z');
+var _user$project$MidiPlayer$start = _elm_lang$svg$Svg_Attributes$d('M10,8v14l16,-7z');
+var _user$project$MidiPlayer$back = _elm_lang$svg$Svg_Attributes$d('M12,10v10h2v-10zm14,0v10l-12,-5z');
+var _user$project$MidiPlayer$controlButton = F2(
+	function (event, inner) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: event,
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$buttonStyles),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					{
+						ctor: '::',
+						_0: _elm_lang$svg$Svg_Attributes$width('40'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$svg$Svg_Attributes$height('30'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: inner,
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$MidiPlayer$trackButtonStyles = function (isVisible) {
+	return {
+		ctor: '::',
+		_0: A2(
+			_user$project$MidiPlayer_ops['=>'],
+			'padding',
+			isVisible ? '9px 4px' : '13px 8px'),
+		_1: {
+			ctor: '::',
+			_0: A2(_user$project$MidiPlayer_ops['=>'], 'box-sizing', 'border-box'),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '20px'),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '30px'),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	};
+};
+var _user$project$MidiPlayer$trackButton = F3(
+	function (options, index, _p0) {
+		var _p1 = _p0;
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(
+					options.onToggleTrack(index)),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						_user$project$MidiPlayer$trackButtonStyles(_p1._1.isVisible)),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', _p1._0.normal),
+								_1: {
+									ctor: '::',
+									_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '100%'),
+									_1: {ctor: '[]'}
+								}
+							}),
+						_1: {ctor: '[]'}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			});
+	});
+var _user$project$MidiPlayer$viewTrackConfig = F5(
+	function (options, midiOuts, index, color, track) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'flex'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A3(
+					_user$project$MidiPlayer$trackButton,
+					options,
+					index,
+					{ctor: '_Tuple2', _0: color, _1: track}),
+				_1: {
+					ctor: '::',
+					_0: A3(
+						_user$project$WebMidiApi$viewSelect,
+						options.onSelectMidiOut(index),
+						midiOuts,
+						track.portId),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
+var _user$project$MidiPlayer$configButton = function (options) {
+	return A2(
+		_user$project$MidiPlayer$controlButton,
+		_elm_lang$html$Html_Events$onClick(options.onToggleConfig),
+		A2(
+			_elm_lang$svg$Svg$path,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
+				_1: {
+					ctor: '::',
+					_0: _user$project$MidiPlayer$config,
+					_1: {ctor: '[]'}
+				}
+			},
+			{ctor: '[]'}));
+};
+var _user$project$MidiPlayer$playButton = F2(
+	function (options, playing) {
+		return A2(
+			_user$project$MidiPlayer$controlButton,
+			_elm_lang$html$Html_Events$onClick(
+				playing ? options.onStop : options.onStart),
+			A2(
+				_elm_lang$svg$Svg$path,
+				{
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
+					_1: {
+						ctor: '::',
+						_0: playing ? _user$project$MidiPlayer$stop : _user$project$MidiPlayer$start,
+						_1: {ctor: '[]'}
+					}
+				},
+				{ctor: '[]'}));
+	});
+var _user$project$MidiPlayer$backButton = function (options) {
+	return A2(
+		_user$project$MidiPlayer$controlButton,
+		_elm_lang$html$Html_Events$onClick(options.onBack),
+		A2(
+			_elm_lang$svg$Svg$path,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
+				_1: {
+					ctor: '::',
+					_0: _user$project$MidiPlayer$back,
+					_1: {ctor: '[]'}
+				}
+			},
+			{ctor: '[]'}));
+};
+var _user$project$MidiPlayer$controlStyles = {
+	ctor: '::',
+	_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
+	_1: {
+		ctor: '::',
+		_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '30px'),
+		_1: {
+			ctor: '::',
+			_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'flex'),
+				_1: {ctor: '[]'}
+			}
+		}
+	}
+};
+var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
+	return {
+		ctor: '::',
+		_0: _elm_lang$svg$Svg_Attributes$width('10000'),
+		_1: {
+			ctor: '::',
+			_0: _elm_lang$svg$Svg_Attributes$height('90'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$viewBox(
+					A2(
+						_elm_lang$core$String$join,
+						' ',
+						A2(
+							_elm_lang$core$List$map,
+							_elm_lang$core$Basics$toString,
+							{
+								ctor: '::',
+								_0: currentPosition - 5000,
+								_1: {
+									ctor: '::',
+									_0: 0,
+									_1: {
+										ctor: '::',
+										_0: 10000,
+										_1: {
+											ctor: '::',
+											_0: 90,
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}))),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$svg$Svg_Attributes$preserveAspectRatio('none'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(
+							{
+								ctor: '::',
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
+								_1: {
+									ctor: '::',
+									_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '270px'),
+									_1: {
+										ctor: '::',
+										_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', 'black'),
+										_1: {
+											ctor: '::',
+											_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'block'),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		}
+	};
+};
+var _user$project$MidiPlayer$centerLine = A2(
+	_elm_lang$html$Html$div,
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html_Attributes$style(
+			{
+				ctor: '::',
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'border-right', 'solid 1px #555'),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '270px'),
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'left', '240px'),
+						_1: {
+							ctor: '::',
+							_0: A2(_user$project$MidiPlayer_ops['=>'], 'top', '0'),
+							_1: {
+								ctor: '::',
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'position', 'absolute'),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}),
+		_1: {ctor: '[]'}
+	},
+	{ctor: '[]'});
+var _user$project$MidiPlayer$Options = F6(
+	function (a, b, c, d, e, f) {
+		return {onBack: a, onStart: b, onStop: c, onToggleTrack: d, onToggleConfig: e, onSelectMidiOut: f};
+	});
+var _user$project$MidiPlayer$NoteColor = F2(
+	function (a, b) {
+		return {highlight: a, normal: b};
+	});
+var _user$project$MidiPlayer$colors = A3(
+	_elm_lang$core$List$map2,
+	_user$project$MidiPlayer$NoteColor,
+	_user$project$Colors$depth(1),
+	_user$project$Colors$depth(5));
+var _user$project$MidiPlayer$trackButtons = F2(
+	function (options, tracks) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'flex'),
+						_1: {
+							ctor: '::',
+							_0: A2(_user$project$MidiPlayer_ops['=>'], 'margin-left', 'auto'),
+							_1: {
+								ctor: '::',
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'padding-right', '10px'),
+								_1: {ctor: '[]'}
+							}
+						}
+					}),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				_user$project$MidiPlayer$trackButton(options),
+				A3(
+					_elm_lang$core$List$map2,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					_user$project$MidiPlayer$colors,
+					tracks)));
+	});
+var _user$project$MidiPlayer$control = F3(
+	function (options, tracks, playing) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$controlStyles),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _user$project$MidiPlayer$backButton(options),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$MidiPlayer$playButton, options, playing),
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer$trackButtons, options, tracks),
+						_1: {
+							ctor: '::',
+							_0: _user$project$MidiPlayer$configButton(options),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			});
+	});
+var _user$project$MidiPlayer$viewConfig = F3(
+	function (options, midiOuts, tracks) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(_user$project$MidiPlayer$configStyles),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (index, _p2) {
+						var _p3 = _p2;
+						return A5(_user$project$MidiPlayer$viewTrackConfig, options, midiOuts, index, _p3._0, _p3._1);
+					}),
+				A3(
+					_elm_lang$core$List$map2,
+					F2(
+						function (v0, v1) {
+							return {ctor: '_Tuple2', _0: v0, _1: v1};
+						}),
+					_user$project$MidiPlayer$colors,
+					tracks)));
+	});
+var _user$project$MidiPlayer$view = F6(
+	function (options, showConfig, midiOuts, playing, time, midi) {
+		var currentPosition = A2(_user$project$Midi$timeToPosition, midi.timeBase, time);
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					{
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'position', 'relative'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$svg$Svg$svg,
+					_user$project$MidiPlayer$containerStyles(currentPosition),
+					A3(
+						_elm_lang$core$List$map2,
+						_user$project$MidiPlayer$viewTrack(currentPosition),
+						_user$project$MidiPlayer$colors,
+						midi.tracks)),
+				_1: {
+					ctor: '::',
+					_0: _user$project$MidiPlayer$centerLine,
+					_1: {
+						ctor: '::',
+						_0: A3(_user$project$MidiPlayer$control, options, midi.tracks, playing),
+						_1: {
+							ctor: '::',
+							_0: showConfig ? A3(_user$project$MidiPlayer$viewConfig, options, midiOuts, midi.tracks) : _elm_lang$html$Html$text(''),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			});
 	});
 
 var _user$project$Main$fileLoadButton = F2(
@@ -12079,8 +12153,8 @@ var _user$project$Main$see = F3(
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 59, column: 3},
-					end: {line: 64, column: 30}
+					start: {line: 60, column: 3},
+					end: {line: 65, column: 30}
 				},
 				_p2)('undefined');
 		}
@@ -12094,15 +12168,15 @@ var _user$project$Main$get = F2(
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 49, column: 3},
-					end: {line: 54, column: 30}
+					start: {line: 50, column: 3},
+					end: {line: 55, column: 30}
 				},
 				_p4)('undefined');
 		}
 	});
-var _user$project$Main$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {midi: a, playing: b, startTime: c, currentTime: d, futureNotes: e, midiOuts: f, selectedMidiOut: g, error: h};
+var _user$project$Main$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {midi: a, playing: b, startTime: c, currentTime: d, futureNotes: e, midiOuts: f, selectedMidiOut: g, showConfig: h, error: i};
 	});
 var _user$project$Main$DecodeError = F2(
 	function (a, b) {
@@ -12111,7 +12185,7 @@ var _user$project$Main$DecodeError = F2(
 var _user$project$Main$NoError = {ctor: 'NoError'};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A8(
+	_0: A9(
 		_user$project$Main$Model,
 		_elm_lang$core$Maybe$Nothing,
 		false,
@@ -12120,9 +12194,11 @@ var _user$project$Main$init = {
 		{ctor: '[]'},
 		{ctor: '[]'},
 		_elm_lang$core$Maybe$Nothing,
+		false,
 		_user$project$Main$NoError),
 	_1: _elm_lang$core$Platform_Cmd$none
 };
+var _user$project$Main$ToggleConfig = {ctor: 'ToggleConfig'};
 var _user$project$Main$ToggleTrack = function (a) {
 	return {ctor: 'ToggleTrack', _0: a};
 };
@@ -12291,8 +12367,8 @@ var _user$project$Main$update = F2(
 						return _elm_lang$core$Native_Utils.crashCase(
 							'Main',
 							{
-								start: {line: 88, column: 3},
-								end: {line: 182, column: 8}
+								start: {line: 90, column: 3},
+								end: {line: 189, column: 8}
 							},
 							_p13)('failed to read arrayBuffer');
 					}
@@ -12411,7 +12487,7 @@ var _user$project$Main$update = F2(
 							}
 						}()
 					};
-				default:
+				case 'ToggleTrack':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -12428,6 +12504,14 @@ var _user$project$Main$update = F2(
 											},
 											model)))
 							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				default:
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{showConfig: !model.showConfig}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 			}
@@ -12458,14 +12542,18 @@ var _user$project$Main$view = function (model) {
 					_0: function () {
 						var _p22 = model.midi;
 						if (_p22.ctor === 'Just') {
-							return A4(
+							return A6(
 								_user$project$MidiPlayer$view,
 								{
 									onBack: _user$project$Main$Back,
 									onStart: _user$project$Main$Timed(_user$project$Main$Start),
 									onStop: _user$project$Main$Stop,
-									onToggleTrack: _user$project$Main$ToggleTrack
+									onToggleTrack: _user$project$Main$ToggleTrack,
+									onToggleConfig: _user$project$Main$ToggleConfig,
+									onSelectMidiOut: _user$project$Main$SelectMidiOut
 								},
+								model.showConfig,
+								model.midiOuts,
 								model.playing,
 								model.currentTime - model.startTime,
 								_p22._0);

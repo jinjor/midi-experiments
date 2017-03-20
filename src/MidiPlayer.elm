@@ -11,6 +11,7 @@ import Svg.Attributes as SA exposing (..)
 import Svg.Keyed
 import Midi exposing (..)
 import Colors
+import WebMidiApi exposing (MidiOut)
 
 
 type alias Options msg =
@@ -18,6 +19,8 @@ type alias Options msg =
   , onStart : msg
   , onStop : msg
   , onToggleTrack : Int -> msg
+  , onToggleConfig : msg
+  , onSelectMidiOut : Int -> String -> msg
   }
 
 
@@ -32,18 +35,19 @@ colors =
   List.map2 NoteColor (Colors.depth 1) (Colors.depth 5)
 
 
-view : Options msg -> Bool -> Time -> Midi -> Html msg
-view options playing time midi =
+view : Options msg -> Bool -> List MidiOut -> Bool -> Time -> Midi -> Html msg
+view options showConfig midiOuts playing time midi =
   let
     currentPosition =
       Midi.timeToPosition midi.timeBase time
   in
-    div [ HA.style [ ("position", "relative") ] ]
+    div [ HA.style [ "position" => "relative" ] ]
       [ midi.tracks
           |> List.map2 (viewTrack currentPosition) colors
           |> svg (containerStyles currentPosition)
       , centerLine
       , control options midi.tracks playing
+      , if showConfig then viewConfig options midiOuts midi.tracks else H.text ""
       ]
 
 
@@ -51,11 +55,11 @@ centerLine : Html msg
 centerLine =
   div
     [ HA.style
-        [ ("border-right", "solid 1px #555")
-        , ("height", "270px")
-        , ("left", "240px")
-        , ("top", "0")
-        , ("position", "absolute")
+        [ "border-right" => "solid 1px #555"
+        , "height" => "270px"
+        , "left" => "240px"
+        , "top" => "0"
+        , "position" => "absolute"
         ]
     ]
     []
@@ -68,10 +72,10 @@ containerStyles currentPosition =
   , viewBox (String.join " " <| List.map toString [currentPosition - 5000, 0, 10000, 90])
   , preserveAspectRatio "none"
   , HA.style
-      [ ("width", "480px")
-      , ("height", "270px")
-      , ("background-color", "black")
-      , ("display", "block")
+      [ "width" => "480px"
+      , "height" => "270px"
+      , "background-color" => "black"
+      , "display" => "block"
       ]
   ]
 
@@ -89,13 +93,10 @@ control options tracks playing =
 
 controlStyles : List (String, String)
 controlStyles =
-  [ ("width", "480px")
-  , ("height", "30px")
-  , ("background-color", "rgba(255,55,25,0.18)")
-  , ("color", "#eee")
-  , ("position", "absolute")
-  , ("bottom", "0")
-  , ("display", "flex")
+  [ "width" => "480px"
+  , "height" => "30px"
+  , "background-color" => "#301"
+  , "display" => "flex"
   ]
 
 
@@ -116,7 +117,7 @@ playButton options playing =
 configButton : Options msg -> Html msg
 configButton options =
   controlButton
-    ( onClick options.onBack )
+    ( onClick options.onToggleConfig )
     ( S.path [ SA.fill "#ddd", config ] [] )
 
 
@@ -125,7 +126,7 @@ trackButtons options tracks =
   tracks
     |> List.map2 (,) colors
     |> List.indexedMap (trackButton options)
-    |> div [ HA.style [ ("display", "flex"), ("margin-left", "auto"), ("padding-right", "10px") ] ]
+    |> div [ HA.style [ "display" => "flex", "margin-left" => "auto", "padding-right" => "10px" ] ]
 
 
 trackButton : Options msg -> Int -> (NoteColor, Track) -> Html msg
@@ -134,15 +135,15 @@ trackButton options index (color, track) =
     [ onClick (options.onToggleTrack index)
     , HA.style (trackButtonStyles track.isVisible)
     ]
-    [ div [ HA.style [ ("background-color", color.normal), ("height", "100%") ] ] [] ]
+    [ div [ HA.style [ "background-color" => color.normal, "height" => "100%" ] ] [] ]
 
 
 trackButtonStyles : Bool -> List (String, String)
 trackButtonStyles isVisible =
-  [ ("padding", if isVisible then "9px 4px" else "13px 8px")
-  , ("box-sizing", "border-box")
-  , ("width", "20px")
-  , ("height", "30px")
+  [ "padding" => (if isVisible then "9px 4px" else "13px 8px")
+  , "box-sizing" => "border-box"
+  , "width" => "20px"
+  , "height" => "30px"
   ]
 
 
@@ -175,9 +176,38 @@ config =
 
 buttonStyles : List (String, String)
 buttonStyles =
-  [ ("width", "40px")
-  , ("bottom", "0")
-  , ("text-align", "center")
+  [ "width" => "40px"
+  , "bottom" => "0"
+  , "text-align" => "center"
+  ]
+
+
+viewConfig : Options msg -> List MidiOut -> List Track -> Html msg
+viewConfig options midiOuts tracks =
+  div
+    [ HA.style configStyles ]
+    ( tracks
+        |> List.map2 (,) colors
+        |> List.indexedMap (\index (color, track) -> viewTrackConfig options midiOuts index color track)
+    )
+
+
+viewTrackConfig : Options msg -> List MidiOut -> Int -> NoteColor -> Track -> Html msg
+viewTrackConfig options midiOuts index color track =
+  div
+    [ HA.style [ "display" => "flex" ]]
+    [ trackButton options index (color, track)
+    , WebMidiApi.viewSelect (options.onSelectMidiOut index) midiOuts track.portId
+    ]
+
+
+configStyles : List (String, String)
+configStyles =
+  [ "padding" => "10px"
+  , "box-sizing" => "border-box"
+  , "width" => "480px"
+  , "background-color" => "#301"
+  , "box-shadow" => "inset rgba(0,0,0,0.4) 0px 4px 7px"
   ]
 
 
@@ -214,6 +244,9 @@ viewNote color note =
     , fill color
     ]
     []
+
+
+(=>) = (,)
 
 
 px : a -> String
