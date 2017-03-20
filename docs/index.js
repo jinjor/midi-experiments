@@ -11306,6 +11306,24 @@ var _user$project$SmfDecoder$smf = A2(
 				A2(_user$project$BinaryDecoder$repeat, header.trackNumber, _user$project$SmfDecoder$track)));
 	});
 
+var _user$project$Midi$setMidiOut = F3(
+	function (index, portId, midi) {
+		return _elm_lang$core$Native_Utils.update(
+			midi,
+			{
+				tracks: A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (i, track) {
+							return _elm_lang$core$Native_Utils.eq(i, index) ? _elm_lang$core$Native_Utils.update(
+								track,
+								{
+									portId: _elm_lang$core$Maybe$Just(portId)
+								}) : track;
+						}),
+					midi.tracks)
+			});
+	});
 var _user$project$Midi$toggleVisibility = F2(
 	function (index, midi) {
 		return _elm_lang$core$Native_Utils.update(
@@ -11524,6 +11542,7 @@ var _user$project$MidiPlayer$buttonStyles = {
 		}
 	}
 };
+var _user$project$MidiPlayer$config = _elm_lang$svg$Svg_Attributes$d('M24,11L22,13.5L22,16.5L24,19L23,20.8L19.8,20.3L17.2,21.8L16,24.8L14,24.8L12.8,21.8L10.2,20.3L7,20.8L6,19L8,16.5L8,13.5L6,11L7,9.2L10.2,9.7L12.8,8.2L14,5.2L16,5.2L17.2,8.2L19.8,9.7L23,9.2zM19,15L17.8,12.2L15,11L12.2,12.2L11,15L12.2,17.8L15,19L17.8,17.8z');
 var _user$project$MidiPlayer$stop = _elm_lang$svg$Svg_Attributes$d('M10,8v14h4v-14zm10,0v14h4v-14z');
 var _user$project$MidiPlayer$start = _elm_lang$svg$Svg_Attributes$d('M10,8v14l16,-7z');
 var _user$project$MidiPlayer$back = _elm_lang$svg$Svg_Attributes$d('M12,10v10h2v-10zm14,0v10l-12,-5z');
@@ -11622,6 +11641,23 @@ var _user$project$MidiPlayer$trackButton = F3(
 				_1: {ctor: '[]'}
 			});
 	});
+var _user$project$MidiPlayer$configButton = function (options) {
+	return A2(
+		_user$project$MidiPlayer$controlButton,
+		_elm_lang$html$Html_Events$onClick(options.onBack),
+		A2(
+			_elm_lang$svg$Svg$path,
+			{
+				ctor: '::',
+				_0: _elm_lang$svg$Svg_Attributes$fill('#ddd'),
+				_1: {
+					ctor: '::',
+					_0: _user$project$MidiPlayer$config,
+					_1: {ctor: '[]'}
+				}
+			},
+			{ctor: '[]'}));
+};
 var _user$project$MidiPlayer$playButton = F2(
 	function (options, playing) {
 		return A2(
@@ -11844,7 +11880,11 @@ var _user$project$MidiPlayer$control = F3(
 					_1: {
 						ctor: '::',
 						_0: A2(_user$project$MidiPlayer$trackButtons, options, tracks),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _user$project$MidiPlayer$configButton(options),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			});
@@ -12172,9 +12212,10 @@ var _user$project$Main$sendNotes = F4(
 					newNotes)));
 		return {ctor: '_Tuple2', _0: newFutureNotes, _1: cmd};
 	});
-var _user$project$Main$SelectMidiOut = function (a) {
-	return {ctor: 'SelectMidiOut', _0: a};
-};
+var _user$project$Main$SelectMidiOut = F2(
+	function (a, b) {
+		return {ctor: 'SelectMidiOut', _0: a, _1: b};
+	});
 var _user$project$Main$ReceiveMidiOuts = function (a) {
 	return {ctor: 'ReceiveMidiOuts', _0: a};
 };
@@ -12251,7 +12292,7 @@ var _user$project$Main$update = F2(
 							'Main',
 							{
 								start: {line: 88, column: 3},
-								end: {line: 180, column: 8}
+								end: {line: 182, column: 8}
 							},
 							_p13)('failed to read arrayBuffer');
 					}
@@ -12342,7 +12383,17 @@ var _user$project$Main$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								selectedMidiOut: _elm_lang$core$Maybe$Just(_p13._0)
+								midi: _elm_lang$core$Maybe$Just(
+									A3(
+										_user$project$Midi$setMidiOut,
+										_p13._0,
+										_p13._1,
+										A2(
+											_user$project$Main$get,
+											function (_) {
+												return _.midi;
+											},
+											model)))
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -12404,39 +12455,35 @@ var _user$project$Main$view = function (model) {
 				_0: A2(_user$project$Main$fileLoadButton, 'audio/mid', _user$project$Main$GotFile),
 				_1: {
 					ctor: '::',
-					_0: A3(_user$project$WebMidiApi$viewSelect, _user$project$Main$SelectMidiOut, model.midiOuts, model.selectedMidiOut),
+					_0: function () {
+						var _p22 = model.midi;
+						if (_p22.ctor === 'Just') {
+							return A4(
+								_user$project$MidiPlayer$view,
+								{
+									onBack: _user$project$Main$Back,
+									onStart: _user$project$Main$Timed(_user$project$Main$Start),
+									onStop: _user$project$Main$Stop,
+									onToggleTrack: _user$project$Main$ToggleTrack
+								},
+								model.playing,
+								model.currentTime - model.startTime,
+								_p22._0);
+						} else {
+							return _elm_lang$html$Html$text('');
+						}
+					}(),
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p22 = model.midi;
-							if (_p22.ctor === 'Just') {
-								return A4(
-									_user$project$MidiPlayer$view,
-									{
-										onBack: _user$project$Main$Back,
-										onStart: _user$project$Main$Timed(_user$project$Main$Start),
-										onStop: _user$project$Main$Stop,
-										onToggleTrack: _user$project$Main$ToggleTrack
-									},
-									model.playing,
-									model.currentTime - model.startTime,
-									_p22._0);
-							} else {
+							var _p23 = model.error;
+							if (_p23.ctor === 'NoError') {
 								return _elm_lang$html$Html$text('');
+							} else {
+								return A2(_user$project$ErrorFormatter$print, _p23._0, _p23._1);
 							}
 						}(),
-						_1: {
-							ctor: '::',
-							_0: function () {
-								var _p23 = model.error;
-								if (_p23.ctor === 'NoError') {
-									return _elm_lang$html$Html$text('');
-								} else {
-									return A2(_user$project$ErrorFormatter$print, _p23._0, _p23._1);
-								}
-							}(),
-							_1: {ctor: '[]'}
-						}
+						_1: {ctor: '[]'}
 					}
 				}
 			}

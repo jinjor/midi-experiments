@@ -83,6 +83,7 @@ control options tracks playing =
     [ backButton options
     , playButton options playing
     , trackButtons options tracks
+    , configButton options
     ]
 
 
@@ -110,6 +111,13 @@ playButton options playing =
   controlButton
     ( onClick ( if playing then options.onStop else options.onStart ) )
     ( S.path [ SA.fill "#ddd", if playing then stop else start ] [] )
+
+
+configButton : Options msg -> Html msg
+configButton options =
+  controlButton
+    ( onClick options.onBack )
+    ( S.path [ SA.fill "#ddd", config ] [] )
 
 
 trackButtons : Options msg -> List Track -> Html msg
@@ -158,6 +166,11 @@ start =
 stop : S.Attribute msg
 stop =
   SA.d "M10,8v14h4v-14zm10,0v14h4v-14z"
+
+
+config : S.Attribute msg
+config =
+  SA.d "M24,11L22,13.5L22,16.5L24,19L23,20.8L19.8,20.3L17.2,21.8L16,24.8L14,24.8L12.8,21.8L10.2,20.3L7,20.8L6,19L8,16.5L8,13.5L6,11L7,9.2L10.2,9.7L12.8,8.2L14,5.2L16,5.2L17.2,8.2L19.8,9.7L23,9.2zM19,15L17.8,12.2L15,11L12.2,12.2L11,15L12.2,17.8L15,19L17.8,17.8z"
 
 
 buttonStyles : List (String, String)
