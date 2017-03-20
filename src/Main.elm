@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Array
 import Json.Decode as Decode
 import Task
 import Time exposing (Time)
@@ -12,7 +13,7 @@ import BinaryDecoder.File as File exposing (File)
 import BinaryDecoder.Byte as Byte exposing (ArrayBuffer, Error)
 import SmfDecoder exposing (Smf)
 import ErrorFormatter
-import Midi exposing (Midi, Note, Channeled)
+import Midi exposing (Midi, Note, Detailed)
 import MidiPlayer
 import WebMidiApi exposing (MidiOut, MidiOutMessage)
 
@@ -32,9 +33,8 @@ type alias Model =
   , playing : Bool
   , startTime : Time
   , currentTime : Time
-  , futureNotes : List (Channeled Note)
+  , futureNotes : List (Detailed Note)
   , midiOuts : List MidiOut
-  , selectedMidiOut : Maybe String
   , showConfig : Bool
   , error : Error
   }
@@ -75,14 +75,14 @@ type Msg
   | Timed (Time -> Msg)
   | ReceiveMidiOuts (List MidiOut)
   | SelectMidiOut Int String
-  | Send WebMidiApi.MidiMessage
+  | Send Int WebMidiApi.MidiMessage
   | ToggleTrack Int
   | ToggleConfig
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model Nothing False 0 0 [] [] Nothing False NoError, Cmd.none)
+  (Model Nothing False 0 0 [] [] False NoError, Cmd.none)
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -155,10 +155,13 @@ update msg model =
     ReceiveMidiOuts midiOuts ->
       ( { model
           | midiOuts = midiOuts
-          , selectedMidiOut =
-              midiOuts
-                |> List.head
-                |> Maybe.map .id
+          , midi =
+              model.midi
+                |> Maybe.map (\midi ->
+                    List.head midiOuts
+                      |> Maybe.map (\midiOut -> Midi.setMidiOutToAllTracks midiOut.id midi)
+                      |> Maybe.withDefault midi
+                  )
         }
       , Cmd.none
       )
@@ -168,14 +171,17 @@ update msg model =
       , Cmd.none
       )
 
-    Send message ->
+    Send trackIndex message ->
       ( model
-      , case (model.playing, model.selectedMidiOut) of
-          (True, Just id) ->
-            WebMidiApi.send { portId = id, message = message }
-
-          _ ->
-            Cmd.none
+      , if model.playing then
+          model.midi
+            |> Maybe.map .tracks
+            |> Maybe.andThen (List.drop trackIndex >> List.head)
+            |> Maybe.andThen .portId
+            |> Maybe.map (\portId -> WebMidiApi.send { portId = portId, message = message })
+            |> Maybe.withDefault Cmd.none
+        else
+          Cmd.none
       )
 
     ToggleTrack index ->
@@ -189,14 +195,15 @@ update msg model =
       )
 
 
-prepareFutureNotes : Midi -> List (Channeled Note)
+prepareFutureNotes : Midi -> List (Detailed Note)
 prepareFutureNotes midi =
   midi.tracks
-    |> List.concatMap (\track -> List.map (Midi.addChannel track.channel) track.notes )
+    |> List.indexedMap (,)
+    |> List.concatMap (\(index, track) -> List.map (Midi.addDetails index track.channel) track.notes )
     |> List.sortBy .position
 
 
-sendNotes : Int -> Time -> Time -> List (Channeled Note) -> (List (Channeled Note), Cmd Msg)
+sendNotes : Int -> Time -> Time -> List (Detailed Note) -> (List (Detailed Note), Cmd Msg)
 sendNotes timeBase startTime currentTime futureNotes =
   let
     time =
@@ -212,8 +219,8 @@ sendNotes timeBase startTime currentTime futureNotes =
       newNotes
         |> List.map (\note -> (Basics.max 0 (Midi.positionToTime timeBase note.position - time), note))
         |> List.concatMap (\(after, note) ->
-            [ Process.sleep after |> Task.perform (\_ -> Send [ 0x90 + note.channel, note.note, note.velocity ])
-            , Process.sleep (after + Midi.positionToTime timeBase note.length) |> Task.perform (\_ -> Send [ 0x80 + note.channel, note.note, 0 ])
+            [ Process.sleep after |> Task.perform (\_ -> Send note.track [ 0x90 + note.channel, note.note, note.velocity ])
+            , Process.sleep (after + Midi.positionToTime timeBase note.length) |> Task.perform (\_ -> Send note.track [ 0x80 + note.channel, note.note, 0 ])
             ]
           )
         |> Cmd.batch
@@ -251,7 +258,6 @@ view model =
   div []
     [ h2 [] [ text "MIDI Player" ]
     , fileLoadButton "audio/mid" GotFile
-    -- , WebMidiApi.viewSelect (SelectMidiOut 0) model.midiOuts model.selectedMidiOut
     , case model.midi of
         Just midi ->
           MidiPlayer.view
