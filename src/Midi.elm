@@ -1,10 +1,10 @@
 module Midi exposing
   ( Midi, Track, Note
-  , Channeled, addChannel
+  , Detailed, addDetails
   , toKey
   , fromSmf
   , positionToTime, timeToPosition
-  , toggleVisibility, setMidiOut
+  , toggleVisibility, setMidiOut, setMidiOutToAllTracks
   )
 
 import Time exposing (Time)
@@ -35,17 +35,18 @@ type alias Note =
   }
 
 
-type alias Channeled a =
-  { a | channel : Int }
+type alias Detailed a =
+  { a | track : Int, channel : Int }
 
 
-addChannel : Int -> Note -> Channeled Note
-addChannel channel note =
+addDetails : Int -> Int -> Note -> Detailed Note
+addDetails track channel note =
   { position = note.position
   , note = note.note
   , velocity = note.velocity
   , length = note.length
   , channel = channel
+  , track = track
   }
 
 
@@ -139,6 +140,15 @@ toggleVisibility index midi =
               else
                 track
             )
+  }
+
+
+setMidiOutToAllTracks : String -> Midi -> Midi
+setMidiOutToAllTracks portId midi =
+  { midi
+    | tracks =
+        midi.tracks
+          |> List.map (\track -> { track | portId = Just portId })
   }
 
 

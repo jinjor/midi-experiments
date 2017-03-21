@@ -11324,6 +11324,23 @@ var _user$project$Midi$setMidiOut = F3(
 					midi.tracks)
 			});
 	});
+var _user$project$Midi$setMidiOutToAllTracks = F2(
+	function (portId, midi) {
+		return _elm_lang$core$Native_Utils.update(
+			midi,
+			{
+				tracks: A2(
+					_elm_lang$core$List$map,
+					function (track) {
+						return _elm_lang$core$Native_Utils.update(
+							track,
+							{
+								portId: _elm_lang$core$Maybe$Just(portId)
+							});
+					},
+					midi.tracks)
+			});
+	});
 var _user$project$Midi$toggleVisibility = F2(
 	function (index, midi) {
 		return _elm_lang$core$Native_Utils.update(
@@ -11355,9 +11372,9 @@ var _user$project$Midi$toKey = function (note) {
 		_elm_lang$core$Basics$toString(note.position),
 		_elm_lang$core$Basics$toString(note.note));
 };
-var _user$project$Midi$addChannel = F2(
-	function (channel, note) {
-		return {position: note.position, note: note.note, velocity: note.velocity, length: note.length, channel: channel};
+var _user$project$Midi$addDetails = F3(
+	function (track, channel, note) {
+		return {position: note.position, note: note.note, velocity: note.velocity, length: note.length, channel: channel, track: track};
 	});
 var _user$project$Midi$Midi = F2(
 	function (a, b) {
@@ -12190,42 +12207,50 @@ var _user$project$Main$prepareFutureNotes = function (midi) {
 		},
 		A2(
 			_elm_lang$core$List$concatMap,
-			function (track) {
+			function (_p2) {
+				var _p3 = _p2;
+				var _p4 = _p3._1;
 				return A2(
 					_elm_lang$core$List$map,
-					_user$project$Midi$addChannel(track.channel),
-					track.notes);
+					A2(_user$project$Midi$addDetails, _p3._0, _p4.channel),
+					_p4.notes);
 			},
-			midi.tracks));
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (v0, v1) {
+						return {ctor: '_Tuple2', _0: v0, _1: v1};
+					}),
+				midi.tracks)));
 };
 var _user$project$Main$see = F3(
 	function (f, data, b) {
-		var _p2 = f(data);
-		if (_p2.ctor === 'Just') {
+		var _p5 = f(data);
+		if (_p5.ctor === 'Just') {
 			return b;
 		} else {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 61, column: 3},
-					end: {line: 66, column: 30}
+					start: {line: 62, column: 3},
+					end: {line: 67, column: 30}
 				},
-				_p2)('undefined');
+				_p5)('undefined');
 		}
 	});
 var _user$project$Main$get = F2(
 	function (f, data) {
-		var _p4 = f(data);
-		if (_p4.ctor === 'Just') {
-			return _p4._0;
+		var _p7 = f(data);
+		if (_p7.ctor === 'Just') {
+			return _p7._0;
 		} else {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 51, column: 3},
-					end: {line: 56, column: 30}
+					start: {line: 52, column: 3},
+					end: {line: 57, column: 30}
 				},
-				_p4)('undefined');
+				_p7)('undefined');
 		}
 	});
 var _user$project$Main$Model = function (a) {
@@ -12270,13 +12295,14 @@ var _user$project$Main$ToggleConfig = {ctor: 'ToggleConfig'};
 var _user$project$Main$ToggleTrack = function (a) {
 	return {ctor: 'ToggleTrack', _0: a};
 };
-var _user$project$Main$Send = function (a) {
-	return {ctor: 'Send', _0: a};
-};
+var _user$project$Main$Send = F2(
+	function (a, b) {
+		return {ctor: 'Send', _0: a, _1: b};
+	});
 var _user$project$Main$sendNotes = F4(
 	function (timeBase, startTime, currentTime, futureNotes) {
 		var time = currentTime - startTime;
-		var _p6 = A3(
+		var _p9 = A3(
 			_user$project$Main$splitWhile,
 			function (note) {
 				return _elm_lang$core$Native_Utils.cmp(
@@ -12285,48 +12311,52 @@ var _user$project$Main$sendNotes = F4(
 			},
 			{ctor: '[]'},
 			futureNotes);
-		var newNotes = _p6._0;
-		var newFutureNotes = _p6._1;
+		var newNotes = _p9._0;
+		var newFutureNotes = _p9._1;
 		var cmd = _elm_lang$core$Platform_Cmd$batch(
 			A2(
 				_elm_lang$core$List$concatMap,
-				function (_p7) {
-					var _p8 = _p7;
-					var _p12 = _p8._1;
-					var _p11 = _p8._0;
+				function (_p10) {
+					var _p11 = _p10;
+					var _p15 = _p11._1;
+					var _p14 = _p11._0;
 					return {
 						ctor: '::',
 						_0: A2(
 							_elm_lang$core$Task$perform,
-							function (_p9) {
-								return _user$project$Main$Send(
+							function (_p12) {
+								return A2(
+									_user$project$Main$Send,
+									_p15.track,
 									{
 										ctor: '::',
-										_0: 144 + _p12.channel,
+										_0: 144 + _p15.channel,
 										_1: {
 											ctor: '::',
-											_0: _p12.note,
+											_0: _p15.note,
 											_1: {
 												ctor: '::',
-												_0: _p12.velocity,
+												_0: _p15.velocity,
 												_1: {ctor: '[]'}
 											}
 										}
 									});
 							},
-							_elm_lang$core$Process$sleep(_p11)),
+							_elm_lang$core$Process$sleep(_p14)),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_lang$core$Task$perform,
-								function (_p10) {
-									return _user$project$Main$Send(
+								function (_p13) {
+									return A2(
+										_user$project$Main$Send,
+										_p15.track,
 										{
 											ctor: '::',
-											_0: 128 + _p12.channel,
+											_0: 128 + _p15.channel,
 											_1: {
 												ctor: '::',
-												_0: _p12.note,
+												_0: _p15.note,
 												_1: {
 													ctor: '::',
 													_0: 0,
@@ -12336,7 +12366,7 @@ var _user$project$Main$sendNotes = F4(
 										});
 								},
 								_elm_lang$core$Process$sleep(
-									_p11 + A2(_user$project$Midi$positionToTime, timeBase, _p12.length))),
+									_p14 + A2(_user$project$Midi$positionToTime, timeBase, _p15.length))),
 							_1: {ctor: '[]'}
 						}
 					};
@@ -12397,8 +12427,8 @@ var _user$project$Main$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p13 = msg;
-			switch (_p13.ctor) {
+			var _p16 = msg;
+			switch (_p16.ctor) {
 				case 'GotFile':
 					return {
 						ctor: '_Tuple2',
@@ -12406,20 +12436,20 @@ var _user$project$Main$update = F2(
 						_1: A2(
 							_elm_lang$core$Task$attempt,
 							_user$project$Main$ReadBuffer,
-							_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p13._0))
+							_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p16._0))
 					};
 				case 'ReadBuffer':
-					if (_p13._0.ctor === 'Ok') {
-						var _p15 = _p13._0._0;
-						var _p14 = A2(_user$project$BinaryDecoder_Byte$decode, _user$project$SmfDecoder$smf, _p15);
-						if (_p14.ctor === 'Ok') {
+					if (_p16._0.ctor === 'Ok') {
+						var _p18 = _p16._0._0;
+						var _p17 = A2(_user$project$BinaryDecoder_Byte$decode, _user$project$SmfDecoder$smf, _p18);
+						if (_p17.ctor === 'Ok') {
 							return {
 								ctor: '_Tuple2',
 								_0: _elm_lang$core$Native_Utils.update(
 									model,
 									{
 										midi: _elm_lang$core$Maybe$Just(
-											_user$project$Midi$fromSmf(_p14._0))
+											_user$project$Midi$fromSmf(_p17._0))
 									}),
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
@@ -12429,7 +12459,7 @@ var _user$project$Main$update = F2(
 								_0: _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										error: A2(_user$project$Main$DecodeError, _p15, _p14._0)
+										error: A2(_user$project$Main$DecodeError, _p18, _p17._0)
 									}),
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
@@ -12438,10 +12468,10 @@ var _user$project$Main$update = F2(
 						return _elm_lang$core$Native_Utils.crashCase(
 							'Main',
 							{
-								start: {line: 94, column: 3},
-								end: {line: 197, column: 24}
+								start: {line: 95, column: 3},
+								end: {line: 204, column: 24}
 							},
-							_p13)('failed to read arrayBuffer');
+							_p16)('failed to read arrayBuffer');
 					}
 				case 'Back':
 					return {
@@ -12452,13 +12482,13 @@ var _user$project$Main$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Start':
-					var _p17 = _p13._0;
-					var _v9 = _user$project$Main$Tick(_p17),
-						_v10 = _elm_lang$core$Native_Utils.update(
+					var _p20 = _p16._0;
+					var _v10 = _user$project$Main$Tick(_p20),
+						_v11 = _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							startTime: (_elm_lang$core$Native_Utils.cmp(model.currentTime, 0) > 0) ? (_p17 - (model.currentTime - model.startTime)) : _p17,
-							currentTime: _p17,
+							startTime: (_elm_lang$core$Native_Utils.cmp(model.currentTime, 0) > 0) ? (_p20 - (model.currentTime - model.startTime)) : _p20,
+							currentTime: _p20,
 							playing: true,
 							futureNotes: _user$project$Main$prepareFutureNotes(
 								A2(
@@ -12468,8 +12498,8 @@ var _user$project$Main$update = F2(
 									},
 									model))
 						});
-					msg = _v9;
-					model = _v10;
+					msg = _v10;
+					model = _v11;
 					continue update;
 				case 'Stop':
 					return {
@@ -12480,8 +12510,8 @@ var _user$project$Main$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'Tick':
-					var _p19 = _p13._0;
-					var _p18 = A4(
+					var _p22 = _p16._0;
+					var _p21 = A4(
 						_user$project$Main$sendNotes,
 						A2(
 							_user$project$Main$get,
@@ -12490,38 +12520,46 @@ var _user$project$Main$update = F2(
 							},
 							model).timeBase,
 						model.startTime,
-						_p19,
+						_p22,
 						model.futureNotes);
-					var futureNotes = _p18._0;
-					var cmd = _p18._1;
+					var futureNotes = _p21._0;
+					var cmd = _p21._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{currentTime: _p19, futureNotes: futureNotes}),
+							{currentTime: _p22, futureNotes: futureNotes}),
 						_1: cmd
 					};
 				case 'Timed':
 					return {
 						ctor: '_Tuple2',
 						_0: model,
-						_1: A2(_elm_lang$core$Task$perform, _p13._0, _elm_lang$core$Time$now)
+						_1: A2(_elm_lang$core$Task$perform, _p16._0, _elm_lang$core$Time$now)
 					};
 				case 'ReceiveMidiAccess':
-					var _p20 = _p13._0;
+					var _p23 = _p16._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								midiIns: _p20.inputs,
-								midiOuts: _p20.outputs,
-								selectedMidiOut: A2(
+								midiIns: _p23.inputs,
+								midiOuts: _p23.outputs,
+								midi: A2(
 									_elm_lang$core$Maybe$map,
-									function (_) {
-										return _.id;
+									function (midi) {
+										return A2(
+											_elm_lang$core$Maybe$withDefault,
+											midi,
+											A2(
+												_elm_lang$core$Maybe$map,
+												function (midiOut) {
+													return A2(_user$project$Midi$setMidiOutToAllTracks, midiOut.id, midi);
+												},
+												_elm_lang$core$List$head(_p23.outputs)));
 									},
-									_elm_lang$core$List$head(_p20.outputs))
+									model.midi)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
@@ -12534,8 +12572,8 @@ var _user$project$Main$update = F2(
 								midi: _elm_lang$core$Maybe$Just(
 									A3(
 										_user$project$Midi$setMidiOut,
-										_p13._0,
-										_p13._1,
+										_p16._0,
+										_p16._1,
 										A2(
 											_user$project$Main$get,
 											function (_) {
@@ -12549,15 +12587,32 @@ var _user$project$Main$update = F2(
 					return {
 						ctor: '_Tuple2',
 						_0: model,
-						_1: function () {
-							var _p21 = {ctor: '_Tuple2', _0: model.playing, _1: model.selectedMidiOut};
-							if (((_p21.ctor === '_Tuple2') && (_p21._0 === true)) && (_p21._1.ctor === 'Just')) {
-								return _user$project$WebMidiApi$send(
-									{portId: _p21._1._0, message: _p13._0});
-							} else {
-								return _elm_lang$core$Platform_Cmd$none;
-							}
-						}()
+						_1: model.playing ? A2(
+							_elm_lang$core$Maybe$withDefault,
+							_elm_lang$core$Platform_Cmd$none,
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (portId) {
+									return _user$project$WebMidiApi$send(
+										{portId: portId, message: _p16._1});
+								},
+								A2(
+									_elm_lang$core$Maybe$andThen,
+									function (_) {
+										return _.portId;
+									},
+									A2(
+										_elm_lang$core$Maybe$andThen,
+										function (_p24) {
+											return _elm_lang$core$List$head(
+												A2(_elm_lang$core$List$drop, _p16._0, _p24));
+										},
+										A2(
+											_elm_lang$core$Maybe$map,
+											function (_) {
+												return _.tracks;
+											},
+											model.midi))))) : _elm_lang$core$Platform_Cmd$none
 					};
 				case 'ToggleTrack':
 					return {
@@ -12568,7 +12623,7 @@ var _user$project$Main$update = F2(
 								midi: _elm_lang$core$Maybe$Just(
 									A2(
 										_user$project$Midi$toggleVisibility,
-										_p13._0,
+										_p16._0,
 										A2(
 											_user$project$Main$get,
 											function (_) {
@@ -12614,8 +12669,8 @@ var _user$project$Main$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: function () {
-						var _p22 = model.midi;
-						if (_p22.ctor === 'Just') {
+						var _p25 = model.midi;
+						if (_p25.ctor === 'Just') {
 							return A6(
 								_user$project$MidiPlayer$view,
 								{
@@ -12630,7 +12685,7 @@ var _user$project$Main$view = function (model) {
 								model.midiOuts,
 								model.playing,
 								model.currentTime - model.startTime,
-								_p22._0);
+								_p25._0);
 						} else {
 							return _elm_lang$html$Html$text('');
 						}
@@ -12638,11 +12693,11 @@ var _user$project$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p23 = model.error;
-							if (_p23.ctor === 'NoError') {
+							var _p26 = model.error;
+							if (_p26.ctor === 'NoError') {
 								return _elm_lang$html$Html$text('');
 							} else {
-								return A2(_user$project$ErrorFormatter$print, _p23._0, _p23._1);
+								return A2(_user$project$ErrorFormatter$print, _p26._0, _p26._1);
 							}
 						}(),
 						_1: {ctor: '[]'}
