@@ -46,8 +46,8 @@ view options showConfig midiOuts playing time midi =
           |> List.map2 (viewTrack currentPosition) colors
           |> svg (containerStyles currentPosition)
       , centerLine
-      , control options midi.tracks playing
-      , if showConfig then viewConfig options midiOuts midi.tracks else H.text ""
+      , lazy3 control options midi.tracks playing
+      , if showConfig then lazy3 viewConfig options midiOuts midi.tracks else H.text ""
       ]
 
 

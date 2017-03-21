@@ -11503,17 +11503,6 @@ var _user$project$WebMidiApi$requestMidiAccess = _elm_lang$core$Native_Platform.
 	function (v) {
 		return null;
 	});
-var _user$project$WebMidiApi$send = _elm_lang$core$Native_Platform.outgoingPort(
-	'send',
-	function (v) {
-		return {
-			portId: v.portId,
-			message: _elm_lang$core$Native_List.toArray(v.message).map(
-				function (v) {
-					return v;
-				})
-		};
-	});
 var _user$project$WebMidiApi$receiveMidiAccess = _elm_lang$core$Native_Platform.incomingPort(
 	'receiveMidiAccess',
 	A2(
@@ -11558,7 +11547,39 @@ var _user$project$WebMidiApi$receiveMidiAccess = _elm_lang$core$Native_Platform.
 							A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string));
 					},
 					A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$string))))));
-var _user$project$WebMidiApi$MidiOutMessage = F2(
+var _user$project$WebMidiApi$send = _elm_lang$core$Native_Platform.outgoingPort(
+	'send',
+	function (v) {
+		return {
+			portId: v.portId,
+			message: _elm_lang$core$Native_List.toArray(v.message).map(
+				function (v) {
+					return v;
+				})
+		};
+	});
+var _user$project$WebMidiApi$receive = _elm_lang$core$Native_Platform.incomingPort(
+	'receive',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (portId) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (message) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{portId: portId, message: message});
+				},
+				A2(
+					_elm_lang$core$Json_Decode$field,
+					'message',
+					_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'portId', _elm_lang$core$Json_Decode$string)));
+var _user$project$WebMidiApi$MidiOutEvent = F2(
+	function (a, b) {
+		return {portId: a, message: b};
+	});
+var _user$project$WebMidiApi$MidiInEvent = F2(
 	function (a, b) {
 		return {portId: a, message: b};
 	});
@@ -12097,10 +12118,10 @@ var _user$project$MidiPlayer$view = F6(
 					_0: _user$project$MidiPlayer$centerLine,
 					_1: {
 						ctor: '::',
-						_0: A3(_user$project$MidiPlayer$control, options, midi.tracks, playing),
+						_0: A4(_elm_lang$html$Html_Lazy$lazy3, _user$project$MidiPlayer$control, options, midi.tracks, playing),
 						_1: {
 							ctor: '::',
-							_0: showConfig ? A3(_user$project$MidiPlayer$viewConfig, options, midiOuts, midi.tracks) : _elm_lang$html$Html$text(''),
+							_0: showConfig ? A4(_elm_lang$html$Html_Lazy$lazy3, _user$project$MidiPlayer$viewConfig, options, midiOuts, midi.tracks) : _elm_lang$html$Html$text(''),
 							_1: {ctor: '[]'}
 						}
 					}
@@ -12242,6 +12263,9 @@ var _user$project$Main$init = {
 	_1: _user$project$WebMidiApi$requestMidiAccess(
 		{ctor: '_Tuple0'})
 };
+var _user$project$Main$ReceiveMidiInEvent = function (a) {
+	return {ctor: 'ReceiveMidiInEvent', _0: a};
+};
 var _user$project$Main$ToggleConfig = {ctor: 'ToggleConfig'};
 var _user$project$Main$ToggleTrack = function (a) {
 	return {ctor: 'ToggleTrack', _0: a};
@@ -12352,8 +12376,12 @@ var _user$project$Main$subscriptions = function (model) {
 			_0: _user$project$WebMidiApi$receiveMidiAccess(_user$project$Main$ReceiveMidiAccess),
 			_1: {
 				ctor: '::',
-				_0: model.playing ? A2(_elm_lang$core$Time$every, (1000 * _elm_lang$core$Time$millisecond) / 30, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none,
-				_1: {ctor: '[]'}
+				_0: _user$project$WebMidiApi$receive(_user$project$Main$ReceiveMidiInEvent),
+				_1: {
+					ctor: '::',
+					_0: model.playing ? A2(_elm_lang$core$Time$every, (1000 * _elm_lang$core$Time$millisecond) / 30, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none,
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
@@ -12410,8 +12438,8 @@ var _user$project$Main$update = F2(
 						return _elm_lang$core$Native_Utils.crashCase(
 							'Main',
 							{
-								start: {line: 93, column: 3},
-								end: {line: 193, column: 8}
+								start: {line: 94, column: 3},
+								end: {line: 197, column: 24}
 							},
 							_p13)('failed to read arrayBuffer');
 					}
@@ -12550,7 +12578,7 @@ var _user$project$Main$update = F2(
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
-				default:
+				case 'ToggleConfig':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -12558,6 +12586,8 @@ var _user$project$Main$update = F2(
 							{showConfig: !model.showConfig}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
+				default:
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			}
 		}
 	});

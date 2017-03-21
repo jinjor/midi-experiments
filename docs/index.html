@@ -27,6 +27,16 @@
           };
           for(let input of midiAccess.inputs.values()) {
             inputs[input.id] = input;
+            input.onmidimessage = e => {
+              var message = [];
+              for (let i = 0; i < e.data.length; i++) {
+                message.push(e.data[i]);
+              }
+              app.ports.receive.send({
+                portId: input.id,
+                message: message
+              });
+            }
           };
           // make ports objects immutable
           var midiAccess = {

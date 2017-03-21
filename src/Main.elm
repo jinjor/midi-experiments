@@ -14,7 +14,7 @@ import SmfDecoder exposing (Smf)
 import ErrorFormatter
 import Midi exposing (Midi, Note, Channeled)
 import MidiPlayer
-import WebMidiApi exposing (MidiPort, MidiAccess, MidiOutMessage)
+import WebMidiApi exposing (MidiPort, MidiAccess, MidiOutEvent, MidiInEvent)
 
 
 main : Program Never Model Msg
@@ -79,6 +79,7 @@ type Msg
   | Send WebMidiApi.MidiMessage
   | ToggleTrack Int
   | ToggleConfig
+  | ReceiveMidiInEvent MidiInEvent
 
 
 init : (Model, Cmd Msg)
@@ -192,6 +193,9 @@ update msg model =
       , Cmd.none
       )
 
+    ReceiveMidiInEvent midiInEvent ->
+      (model, Cmd.none)
+
 
 prepareFutureNotes : Midi -> List (Channeled Note)
 prepareFutureNotes midi =
@@ -243,6 +247,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
     [ WebMidiApi.receiveMidiAccess ReceiveMidiAccess
+    , WebMidiApi.receive ReceiveMidiInEvent
     , if model.playing then
         Time.every (1000 * Time.millisecond / 30) Tick
       else

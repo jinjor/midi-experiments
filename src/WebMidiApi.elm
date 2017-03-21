@@ -10,14 +10,16 @@ type alias MidiMessage =
   List Int
 
 
-type alias MidiOutMessage =
+type alias MidiOutEvent =
   { portId : String
   , message : MidiMessage
   }
 
 
-port requestMidiAccess : () -> Cmd msg
-port send : MidiOutMessage -> Cmd msg
+type alias MidiInEvent =
+  { portId : String
+  , message : MidiMessage
+  }
 
 
 type alias MidiPort =
@@ -32,7 +34,10 @@ type alias MidiAccess =
   }
 
 
+port requestMidiAccess : () -> Cmd msg
 port receiveMidiAccess : (MidiAccess -> msg) -> Sub msg
+port send : MidiOutEvent -> Cmd msg
+port receive : (MidiInEvent -> msg) -> Sub msg
 
 
 viewSelect : (String -> msg) -> List MidiPort -> Maybe String -> Html msg
