@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Array
 import Json.Decode as Decode
@@ -16,6 +16,10 @@ import ErrorFormatter
 import Midi exposing (Midi, Note, Detailed)
 import MidiPlayer
 import WebMidiApi exposing (MidiPort, MidiAccess, MidiOutEvent, MidiInEvent)
+
+
+port start : () -> Cmd msg
+port stop : () -> Cmd msg
 
 
 main : Program Never Model Msg
@@ -90,6 +94,15 @@ init =
   )
 
 
+andThen : (model -> (model, Cmd msg)) -> (model, Cmd msg) -> (model, Cmd msg)
+andThen f (model, cmd) =
+  let
+    (newModel, newCmd) =
+      f model
+  in
+    newModel ! [ cmd, newCmd ]
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -104,7 +117,7 @@ update msg model =
           ( { model
               | midi = Just (Midi.fromSmf smf)
             }
-          , Cmd.none
+          , WebMidiApi.requestMidiAccess ()
           )
 
         Err e ->
@@ -123,7 +136,7 @@ update msg model =
       }, Cmd.none )
 
     Start currentTime ->
-      { model
+      ( { model
           | startTime =
               if model.currentTime > 0 then
                 currentTime - (model.currentTime - model.startTime)
@@ -132,13 +145,17 @@ update msg model =
           , currentTime = currentTime
           , playing = True
           , futureNotes = prepareFutureNotes (get .midi model)
-      }
-      |> update (Tick currentTime)
+        }
+      , start ()
+      )
+        |> andThen (update (Tick currentTime))
 
     Stop ->
-      ({ model
+      ( { model
           | playing = False
-      }, Cmd.none )
+        }
+      , stop ()
+      )
 
     Tick currentTime ->
       let
@@ -235,7 +252,6 @@ sendNotes timeBase startTime currentTime futureNotes =
         |> Cmd.batch
   in
     (newFutureNotes, cmd)
-
 
 
 splitWhile : (a -> Bool) -> List a -> List a -> (List a, List a)

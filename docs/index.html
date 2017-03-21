@@ -10,17 +10,53 @@
 </head>
 <body>
   <script>
+    window.AudioContext = window.AudioContext||window.webkitAudioContext;
+    let audioContext = new AudioContext();
+    let destination = audioContext.destination;
+
+    let oscillators = [];
+    let gains = [];
     let outputs = {};
     let inputs = {};
-    let app = Elm.Main.fullscreen();
-    app.ports.send.subscribe(data => {
-      let output = outputs[data.portId];
-      if(output) {
-        output.send(data.message);
+
+    for(let i = 0; i < 15; i++) {
+      let oscillator = audioContext.createOscillator();
+      oscillator.type = 'square';
+      oscillator.start = oscillator.start || oscillator.noteOn;
+      oscillators[i] = oscillator;
+    }
+    for(let i = 0; i < 15; i++) {
+      let gain = audioContext.createGain();
+      gain.gain.value = 0;
+      gains[i] = gain;
+    }
+    for(let i = 0; i < 15; i++) {
+      let oscillator = oscillators[i];
+      let gain = gains[i];
+      oscillator.connect(gain);
+      gain.connect(destination);
+    }
+    for(let i = 0; i < 15; i++) {
+      let oscillator = oscillators[i];
+      let gain = gains[i];
+      let id = i + '';
+      outputs[id] = {
+        id: id,
+        name: 'Simple ' + id,
+        send: message => {
+          if(message[0] === 0x90) {
+            gain.gain.value = 0.03;
+            let frequency = 440 * Math.pow(Math.pow(2, 1 / 12), message[1] - 69);
+            oscillator.frequency.setValueAtTime(frequency, 0);
+          } else if(message[0] === 0x80) {
+            gain.gain.value = 0;
+          }
+        }
       }
-    });
-    app.ports.requestMidiAccess.subscribe(() => {
-      navigator.requestMIDIAccess()
+    }
+
+    function syncMidiAccess() {
+      return navigator.requestMIDIAccess()
         .then(midiAccess => {
           for(let output of midiAccess.outputs.values()) {
             outputs[output.id] = output;
@@ -39,7 +75,7 @@
             }
           };
           // make ports objects immutable
-          var midiAccess = {
+          return Promise.resolve({
             inputs: Object.keys(inputs).map(id => {
               var input = inputs[id];
               return {
@@ -54,11 +90,27 @@
                 name: output.name
               };
             })
-          }
-          app.ports.receiveMidiAccess.send(midiAccess);
-        }).catch(e => {
-          console.log(e);
+          });
         });
+    }
+
+    let app = Elm.Main.fullscreen();
+    app.ports.start.subscribe(() => {
+      oscillators.forEach(o => o.start());
+    });
+    app.ports.stop.subscribe(() => {
+      oscillators.forEach(o => o.stop());
+    });
+    app.ports.send.subscribe(data => {
+      let output = outputs[data.portId];
+      if(output) {
+        output.send(data.message);
+      }
+    });
+    app.ports.requestMidiAccess.subscribe(() => {
+      syncMidiAccess().then(midiAccess => {
+        app.ports.receiveMidiAccess.send(midiAccess);
+      });
     });
   </script>
 </body>
