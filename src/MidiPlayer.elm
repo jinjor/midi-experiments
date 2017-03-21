@@ -11,7 +11,7 @@ import Svg.Attributes as SA exposing (..)
 import Svg.Keyed
 import Midi exposing (..)
 import Colors
-import WebMidiApi exposing (MidiOut)
+import WebMidiApi exposing (MidiPort)
 
 
 type alias Options msg =
@@ -35,7 +35,7 @@ colors =
   List.map2 NoteColor (Colors.depth 1) (Colors.depth 5)
 
 
-view : Options msg -> Bool -> List MidiOut -> Bool -> Time -> Midi -> Html msg
+view : Options msg -> Bool -> List MidiPort -> Bool -> Time -> Midi -> Html msg
 view options showConfig midiOuts playing time midi =
   let
     currentPosition =
@@ -182,7 +182,7 @@ buttonStyles =
   ]
 
 
-viewConfig : Options msg -> List MidiOut -> List Track -> Html msg
+viewConfig : Options msg -> List MidiPort -> List Track -> Html msg
 viewConfig options midiOuts tracks =
   div
     [ HA.style configStyles ]
@@ -192,7 +192,7 @@ viewConfig options midiOuts tracks =
     )
 
 
-viewTrackConfig : Options msg -> List MidiOut -> Int -> NoteColor -> Track -> Html msg
+viewTrackConfig : Options msg -> List MidiPort -> Int -> NoteColor -> Track -> Html msg
 viewTrackConfig options midiOuts index color track =
   div
     [ HA.style [ "display" => "flex" ]]

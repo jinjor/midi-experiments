@@ -11470,22 +11470,22 @@ var _user$project$WebMidiApi$onChange = function (toMsg) {
 		A2(_elm_lang$core$Json_Decode$map, toMsg, _elm_lang$html$Html_Events$targetValue));
 };
 var _user$project$WebMidiApi$viewOption = F2(
-	function (selectedMidiOut, midiOut) {
+	function (selectedMidiPort, midiPorts) {
 		return A2(
 			_elm_lang$html$Html$option,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$value(midiOut.id),
+				_0: _elm_lang$html$Html_Attributes$value(midiPorts.id),
 				_1: {ctor: '[]'}
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(midiOut.name),
+				_0: _elm_lang$html$Html$text(midiPorts.name),
 				_1: {ctor: '[]'}
 			});
 	});
 var _user$project$WebMidiApi$viewSelect = F3(
-	function (toMsg, midiOuts, selectedMidiOut) {
+	function (toMsg, midiPorts, selectedMidiPort) {
 		return A2(
 			_elm_lang$html$Html$select,
 			{
@@ -11495,11 +11495,11 @@ var _user$project$WebMidiApi$viewSelect = F3(
 			},
 			A2(
 				_elm_lang$core$List$map,
-				_user$project$WebMidiApi$viewOption(selectedMidiOut),
-				midiOuts));
+				_user$project$WebMidiApi$viewOption(selectedMidiPort),
+				midiPorts));
 	});
-var _user$project$WebMidiApi$requestMidiOuts = _elm_lang$core$Native_Platform.outgoingPort(
-	'requestMidiOuts',
+var _user$project$WebMidiApi$requestMidiAccess = _elm_lang$core$Native_Platform.outgoingPort(
+	'requestMidiAccess',
 	function (v) {
 		return null;
 	});
@@ -11514,28 +11514,61 @@ var _user$project$WebMidiApi$send = _elm_lang$core$Native_Platform.outgoingPort(
 				})
 		};
 	});
-var _user$project$WebMidiApi$receiveMidiOuts = _elm_lang$core$Native_Platform.incomingPort(
-	'receiveMidiOuts',
-	_elm_lang$core$Json_Decode$list(
+var _user$project$WebMidiApi$receiveMidiAccess = _elm_lang$core$Native_Platform.incomingPort(
+	'receiveMidiAccess',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (inputs) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				function (outputs) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{inputs: inputs, outputs: outputs});
+				},
+				A2(
+					_elm_lang$core$Json_Decode$field,
+					'outputs',
+					_elm_lang$core$Json_Decode$list(
+						A2(
+							_elm_lang$core$Json_Decode$andThen,
+							function (id) {
+								return A2(
+									_elm_lang$core$Json_Decode$andThen,
+									function (name) {
+										return _elm_lang$core$Json_Decode$succeed(
+											{id: id, name: name});
+									},
+									A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string));
+							},
+							A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$string)))));
+		},
 		A2(
-			_elm_lang$core$Json_Decode$andThen,
-			function (id) {
-				return A2(
+			_elm_lang$core$Json_Decode$field,
+			'inputs',
+			_elm_lang$core$Json_Decode$list(
+				A2(
 					_elm_lang$core$Json_Decode$andThen,
-					function (name) {
-						return _elm_lang$core$Json_Decode$succeed(
-							{id: id, name: name});
+					function (id) {
+						return A2(
+							_elm_lang$core$Json_Decode$andThen,
+							function (name) {
+								return _elm_lang$core$Json_Decode$succeed(
+									{id: id, name: name});
+							},
+							A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string));
 					},
-					A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string));
-			},
-			A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$string))));
+					A2(_elm_lang$core$Json_Decode$field, 'id', _elm_lang$core$Json_Decode$string))))));
 var _user$project$WebMidiApi$MidiOutMessage = F2(
 	function (a, b) {
 		return {portId: a, message: b};
 	});
-var _user$project$WebMidiApi$MidiOut = F2(
+var _user$project$WebMidiApi$MidiPort = F2(
 	function (a, b) {
 		return {id: a, name: b};
+	});
+var _user$project$WebMidiApi$MidiAccess = F2(
+	function (a, b) {
+		return {inputs: a, outputs: b};
 	});
 
 var _user$project$MidiPlayer$px = function (num) {
@@ -12153,8 +12186,8 @@ var _user$project$Main$see = F3(
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 60, column: 3},
-					end: {line: 65, column: 30}
+					start: {line: 61, column: 3},
+					end: {line: 66, column: 30}
 				},
 				_p2)('undefined');
 		}
@@ -12168,16 +12201,33 @@ var _user$project$Main$get = F2(
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 50, column: 3},
-					end: {line: 55, column: 30}
+					start: {line: 51, column: 3},
+					end: {line: 56, column: 30}
 				},
 				_p4)('undefined');
 		}
 	});
-var _user$project$Main$Model = F9(
-	function (a, b, c, d, e, f, g, h, i) {
-		return {midi: a, playing: b, startTime: c, currentTime: d, futureNotes: e, midiOuts: f, selectedMidiOut: g, showConfig: h, error: i};
-	});
+var _user$project$Main$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {midi: a, playing: b, startTime: c, currentTime: d, futureNotes: e, midiIns: f, midiOuts: g, selectedMidiOut: h, showConfig: i, error: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var _user$project$Main$DecodeError = F2(
 	function (a, b) {
 		return {ctor: 'DecodeError', _0: a, _1: b};
@@ -12185,18 +12235,12 @@ var _user$project$Main$DecodeError = F2(
 var _user$project$Main$NoError = {ctor: 'NoError'};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A9(
-		_user$project$Main$Model,
-		_elm_lang$core$Maybe$Nothing,
-		false,
-		0,
-		0,
-		{ctor: '[]'},
-		{ctor: '[]'},
-		_elm_lang$core$Maybe$Nothing,
-		false,
-		_user$project$Main$NoError),
-	_1: _elm_lang$core$Platform_Cmd$none
+	_0: _user$project$Main$Model(_elm_lang$core$Maybe$Nothing)(false)(0)(0)(
+		{ctor: '[]'})(
+		{ctor: '[]'})(
+		{ctor: '[]'})(_elm_lang$core$Maybe$Nothing)(false)(_user$project$Main$NoError),
+	_1: _user$project$WebMidiApi$requestMidiAccess(
+		{ctor: '_Tuple0'})
 };
 var _user$project$Main$ToggleConfig = {ctor: 'ToggleConfig'};
 var _user$project$Main$ToggleTrack = function (a) {
@@ -12292,8 +12336,8 @@ var _user$project$Main$SelectMidiOut = F2(
 	function (a, b) {
 		return {ctor: 'SelectMidiOut', _0: a, _1: b};
 	});
-var _user$project$Main$ReceiveMidiOuts = function (a) {
-	return {ctor: 'ReceiveMidiOuts', _0: a};
+var _user$project$Main$ReceiveMidiAccess = function (a) {
+	return {ctor: 'ReceiveMidiAccess', _0: a};
 };
 var _user$project$Main$Timed = function (a) {
 	return {ctor: 'Timed', _0: a};
@@ -12305,7 +12349,7 @@ var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
-			_0: _user$project$WebMidiApi$receiveMidiOuts(_user$project$Main$ReceiveMidiOuts),
+			_0: _user$project$WebMidiApi$receiveMidiAccess(_user$project$Main$ReceiveMidiAccess),
 			_1: {
 				ctor: '::',
 				_0: model.playing ? A2(_elm_lang$core$Time$every, (1000 * _elm_lang$core$Time$millisecond) / 30, _user$project$Main$Tick) : _elm_lang$core$Platform_Sub$none,
@@ -12349,8 +12393,7 @@ var _user$project$Main$update = F2(
 										midi: _elm_lang$core$Maybe$Just(
 											_user$project$Midi$fromSmf(_p14._0))
 									}),
-								_1: _user$project$WebMidiApi$requestMidiOuts(
-									{ctor: '_Tuple0'})
+								_1: _elm_lang$core$Platform_Cmd$none
 							};
 						} else {
 							return {
@@ -12367,8 +12410,8 @@ var _user$project$Main$update = F2(
 						return _elm_lang$core$Native_Utils.crashCase(
 							'Main',
 							{
-								start: {line: 90, column: 3},
-								end: {line: 189, column: 8}
+								start: {line: 93, column: 3},
+								end: {line: 193, column: 8}
 							},
 							_p13)('failed to read arrayBuffer');
 					}
@@ -12436,20 +12479,21 @@ var _user$project$Main$update = F2(
 						_0: model,
 						_1: A2(_elm_lang$core$Task$perform, _p13._0, _elm_lang$core$Time$now)
 					};
-				case 'ReceiveMidiOuts':
+				case 'ReceiveMidiAccess':
 					var _p20 = _p13._0;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								midiOuts: _p20,
+								midiIns: _p20.inputs,
+								midiOuts: _p20.outputs,
 								selectedMidiOut: A2(
 									_elm_lang$core$Maybe$map,
 									function (_) {
 										return _.id;
 									},
-									_elm_lang$core$List$head(_p20))
+									_elm_lang$core$List$head(_p20.outputs))
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};

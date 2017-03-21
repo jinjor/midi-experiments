@@ -14,7 +14,7 @@ import SmfDecoder exposing (Smf)
 import ErrorFormatter
 import Midi exposing (Midi, Note, Channeled)
 import MidiPlayer
-import WebMidiApi exposing (MidiOut, MidiOutMessage)
+import WebMidiApi exposing (MidiPort, MidiAccess, MidiOutMessage)
 
 
 main : Program Never Model Msg
@@ -33,7 +33,8 @@ type alias Model =
   , startTime : Time
   , currentTime : Time
   , futureNotes : List (Channeled Note)
-  , midiOuts : List MidiOut
+  , midiIns : List MidiPort
+  , midiOuts : List MidiPort
   , selectedMidiOut : Maybe String
   , showConfig : Bool
   , error : Error
@@ -73,7 +74,7 @@ type Msg
   | Stop
   | Tick Time
   | Timed (Time -> Msg)
-  | ReceiveMidiOuts (List MidiOut)
+  | ReceiveMidiAccess MidiAccess
   | SelectMidiOut Int String
   | Send WebMidiApi.MidiMessage
   | ToggleTrack Int
@@ -82,7 +83,9 @@ type Msg
 
 init : (Model, Cmd Msg)
 init =
-  (Model Nothing False 0 0 [] [] Nothing False NoError, Cmd.none)
+  ( Model Nothing False 0 0 [] [] [] Nothing False NoError
+  , WebMidiApi.requestMidiAccess ()
+  )
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -99,7 +102,7 @@ update msg model =
           ( { model
               | midi = Just (Midi.fromSmf smf)
             }
-          , WebMidiApi.requestMidiOuts ()
+          , Cmd.none
           )
 
         Err e ->
@@ -152,11 +155,12 @@ update msg model =
     Timed toMsg ->
       ( model, Task.perform toMsg Time.now )
 
-    ReceiveMidiOuts midiOuts ->
+    ReceiveMidiAccess midiAccess ->
       ( { model
-          | midiOuts = midiOuts
+          | midiIns = midiAccess.inputs
+          , midiOuts = midiAccess.outputs
           , selectedMidiOut =
-              midiOuts
+              midiAccess.outputs
                 |> List.head
                 |> Maybe.map .id
         }
@@ -238,7 +242,7 @@ splitWhile f taken list =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-    [ WebMidiApi.receiveMidiOuts ReceiveMidiOuts
+    [ WebMidiApi.receiveMidiAccess ReceiveMidiAccess
     , if model.playing then
         Time.every (1000 * Time.millisecond / 30) Tick
       else

@@ -11,6 +11,7 @@
 <body>
   <script>
     let outputs = {};
+    let inputs = {};
     let app = Elm.Main.fullscreen();
     app.ports.send.subscribe(data => {
       let output = outputs[data.portId];
@@ -18,19 +19,33 @@
         output.send(data.message);
       }
     });
-    app.ports.requestMidiOuts.subscribe(() => {
+    app.ports.requestMidiAccess.subscribe(() => {
       navigator.requestMIDIAccess()
         .then(midiAccess => {
           for(let output of midiAccess.outputs.values()) {
             outputs[output.id] = output;
           };
-          app.ports.receiveMidiOuts.send(Object.keys(outputs).map(id => {
-            let output = outputs[id];
-            return {
-              id: output.id,
-              name: output.name
-            };
-          }));
+          for(let input of midiAccess.inputs.values()) {
+            inputs[input.id] = input;
+          };
+          // make ports objects immutable
+          var midiAccess = {
+            inputs: Object.keys(inputs).map(id => {
+              var input = inputs[id];
+              return {
+                id: input.id,
+                name: input.name
+              };
+            }),
+            outputs: Object.keys(outputs).map(id => {
+              var output = outputs[id];
+              return {
+                id: output.id,
+                name: output.name
+              };
+            })
+          }
+          app.ports.receiveMidiAccess.send(midiAccess);
         }).catch(e => {
           console.log(e);
         });

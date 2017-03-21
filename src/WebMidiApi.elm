@@ -16,29 +16,35 @@ type alias MidiOutMessage =
   }
 
 
-port requestMidiOuts : () -> Cmd msg
+port requestMidiAccess : () -> Cmd msg
 port send : MidiOutMessage -> Cmd msg
 
 
-type alias MidiOut =
+type alias MidiPort =
   { id : String
   , name : String
   }
 
 
-port receiveMidiOuts : (List MidiOut -> msg) -> Sub msg
+type alias MidiAccess =
+  { inputs : List MidiPort
+  , outputs : List MidiPort
+  }
 
 
-viewSelect : (String -> msg) -> List MidiOut -> Maybe String -> Html msg
-viewSelect toMsg midiOuts selectedMidiOut =
+port receiveMidiAccess : (MidiAccess -> msg) -> Sub msg
+
+
+viewSelect : (String -> msg) -> List MidiPort -> Maybe String -> Html msg
+viewSelect toMsg midiPorts selectedMidiPort =
   select
     [ onChange toMsg ]
-    ( List.map (viewOption selectedMidiOut) midiOuts )
+    ( List.map (viewOption selectedMidiPort) midiPorts )
 
 
-viewOption : Maybe String -> MidiOut -> Html msg
-viewOption selectedMidiOut midiOut =
-  option [ value midiOut.id ] [ text midiOut.name ]
+viewOption : Maybe String -> MidiPort -> Html msg
+viewOption selectedMidiPort midiPorts =
+  option [ value midiPorts.id ] [ text midiPorts.name ]
 
 
 onChange : (String -> msg) -> Html.Attribute msg
