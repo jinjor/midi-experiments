@@ -6,54 +6,17 @@
   <style>html,head,body { padding:0; margin:0; }
     body { font-family: calibri, helvetica, arial, sans-serif; }
   </style>
+  <script src="simple-instruments.js"></script>
   <script src="index.js"></script>
 </head>
 <body>
   <script>
-    window.AudioContext = window.AudioContext||window.webkitAudioContext;
-    let audioContext = new AudioContext();
-    let destination = audioContext.destination;
-
-    let oscillators = [];
-    let gains = [];
     let outputs = {};
     let inputs = {};
 
-    for(let i = 0; i < 15; i++) {
-      let oscillator = audioContext.createOscillator();
-      oscillator.type = 'square';
-      oscillator.start = oscillator.start || oscillator.noteOn;
-      oscillators[i] = oscillator;
-    }
-    for(let i = 0; i < 15; i++) {
-      let gain = audioContext.createGain();
-      gain.gain.value = 0;
-      gains[i] = gain;
-    }
-    for(let i = 0; i < 15; i++) {
-      let oscillator = oscillators[i];
-      let gain = gains[i];
-      oscillator.connect(gain);
-      gain.connect(destination);
-    }
-    for(let i = 0; i < 15; i++) {
-      let oscillator = oscillators[i];
-      let gain = gains[i];
-      let id = i + '';
-      outputs[id] = {
-        id: id,
-        name: 'Simple ' + id,
-        send: message => {
-          if(message[0] === 0x90) {
-            gain.gain.value = 0.03;
-            let frequency = 440 * Math.pow(Math.pow(2, 1 / 12), message[1] - 69);
-            oscillator.frequency.setValueAtTime(frequency, 0);
-          } else if(message[0] === 0x80) {
-            gain.gain.value = 0;
-          }
-        }
-      }
-    }
+    SimpleInstruments.ports.forEach(port => {
+      outputs[port.id] = port;
+    });
 
     function syncMidiAccess() {
       return navigator.requestMIDIAccess()
@@ -77,14 +40,14 @@
           // make ports objects immutable
           return Promise.resolve({
             inputs: Object.keys(inputs).map(id => {
-              var input = inputs[id];
+              let input = inputs[id];
               return {
                 id: input.id,
                 name: input.name
               };
             }),
             outputs: Object.keys(outputs).map(id => {
-              var output = outputs[id];
+              let output = outputs[id];
               return {
                 id: output.id,
                 name: output.name
@@ -96,10 +59,14 @@
 
     let app = Elm.Main.fullscreen();
     app.ports.start.subscribe(() => {
-      oscillators.forEach(o => o.start());
+
     });
     app.ports.stop.subscribe(() => {
-      oscillators.forEach(o => o.stop());
+      outputs: Object.keys(outputs).forEach(id => {
+        let output = outputs[id];
+        // output.send([0xb0,123,0]);// all notes off
+        output.send([0xb0,120,0]);// all sounds off
+      });
     });
     app.ports.send.subscribe(data => {
       let output = outputs[data.portId];
