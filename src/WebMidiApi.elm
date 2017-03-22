@@ -13,6 +13,7 @@ type alias MidiMessage =
 type alias MidiOutEvent =
   { portId : String
   , message : MidiMessage
+  , at : Int
   }
 
 

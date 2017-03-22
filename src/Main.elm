@@ -201,7 +201,7 @@ update msg model =
             |> Maybe.map .tracks
             |> Maybe.andThen (List.drop trackIndex >> List.head)
             |> Maybe.andThen .portId
-            |> Maybe.map (\portId -> WebMidiApi.send { portId = portId, message = message })
+            |> Maybe.map (\portId -> WebMidiApi.send (MidiOutEvent portId message 0))
             |> Maybe.withDefault Cmd.none
         else
           Cmd.none

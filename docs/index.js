@@ -11572,7 +11572,8 @@ var _user$project$WebMidiApi$send = _elm_lang$core$Native_Platform.outgoingPort(
 			message: _elm_lang$core$Native_List.toArray(v.message).map(
 				function (v) {
 					return v;
-				})
+				}),
+			at: v.at
 		};
 	});
 var _user$project$WebMidiApi$receive = _elm_lang$core$Native_Platform.incomingPort(
@@ -11592,9 +11593,9 @@ var _user$project$WebMidiApi$receive = _elm_lang$core$Native_Platform.incomingPo
 					_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
 		},
 		A2(_elm_lang$core$Json_Decode$field, 'portId', _elm_lang$core$Json_Decode$string)));
-var _user$project$WebMidiApi$MidiOutEvent = F2(
-	function (a, b) {
-		return {portId: a, message: b};
+var _user$project$WebMidiApi$MidiOutEvent = F3(
+	function (a, b, c) {
+		return {portId: a, message: b, at: c};
 	});
 var _user$project$WebMidiApi$MidiInEvent = F2(
 	function (a, b) {
@@ -12628,7 +12629,7 @@ var _user$project$Main$update = F2(
 							_elm_lang$core$Maybe$map,
 							function (portId) {
 								return _user$project$WebMidiApi$send(
-									{portId: portId, message: _p19._1});
+									A3(_user$project$WebMidiApi$MidiOutEvent, portId, _p19._1, 0));
 							},
 							A2(
 								_elm_lang$core$Maybe$andThen,
