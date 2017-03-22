@@ -3,29 +3,27 @@ var SimpleInstruments = (function() {
   let audioContext = new AudioContext();
   let destination = audioContext.destination;
 
-  let oscillators = [];
-  let gains = [];
-
-
-  for(let i = 0; i < 15; i++) {
+  let indices = [];
+  for(let i = 0; i < 16; i++) {
+    indices.push(i);
+  }
+  var ports = indices.map(i => {
+    // Oscillator
     let oscillator = audioContext.createOscillator();
     oscillator.type = 'square';
     oscillator.start = oscillator.start || oscillator.noteOn;
-    oscillators[i] = oscillator;
-  }
-  for(let i = 0; i < 15; i++) {
+
+    // Gain
     let gain = audioContext.createGain();
     gain.gain.value = 0;
-    gains[i] = gain;
-  }
-  for(let i = 0; i < 15; i++) {
-    let oscillator = oscillators[i];
-    let gain = gains[i];
+
+    // Connect
     oscillator.connect(gain);
     gain.connect(destination);
-  }
-  var ports = oscillators.map((oscillator, i) => {
-    let gain = gains[i];
+
+    // Start
+    oscillator.start();
+
     let id = i + '';
     return {
       id: id,
@@ -40,15 +38,12 @@ var SimpleInstruments = (function() {
         } else if(message[0] === 0xb0) {
           // all notes/sound off
           if(message[1] === 123 || message[1] === 120) {
-            gains.forEach(gain => {
-              gain.gain.value = 0;
-            });
+            gain.gain.value = 0;
           }
         }
       }
     };
   });
-  oscillators.forEach(o => o.start());
   return {
     ports: ports
   };
