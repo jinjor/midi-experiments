@@ -29,7 +29,7 @@ var SimpleInstruments = (function() {
       id: id,
       name: 'Simple ' + id,
       send: (message, at) => {
-        at = at || 0;
+        at = audioContext.currentTime + (at ? Math.max(at - performance.now(), 0) / 1000 : 0);
         if(message[0] === 0x80) {
           gain.gain.setValueAtTime(0, at);
         } else if(message[0] === 0x90) {
@@ -39,7 +39,9 @@ var SimpleInstruments = (function() {
         } else if(message[0] === 0xb0) {
           // all notes/sound off
           if(message[1] === 123 || message[1] === 120) {
-            gain.gain.setValueAtTime(0, at);
+            oscillator.frequency.cancelScheduledValues(at);
+            gain.gain.cancelScheduledValues(at);
+            gain.gain.setValueAtTime(0, at + 0.001);
           }
         }
       }

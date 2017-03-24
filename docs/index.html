@@ -68,11 +68,13 @@
         output.send([0xb0,120,0]);// all sounds off
       });
     });
-    app.ports.send.subscribe(data => {
-      let output = outputs[data.portId];
-      if(output) {
-        output.send(data.message, data.at);
-      }
+    app.ports.send.subscribe(events => {
+      events.forEach(e => {
+        let output = outputs[e.portId];
+        if(output) {
+          output.send(e.message, performance.now() + e.at);
+        }
+      });
     });
     app.ports.requestMidiAccess.subscribe(() => {
       syncMidiAccess().then(midiAccess => {

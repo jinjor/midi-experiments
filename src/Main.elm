@@ -81,7 +81,6 @@ type Msg
   | Timed (Time -> Msg)
   | ReceiveMidiAccess MidiAccess
   | SelectMidiOut Int String
-  | Send Int WebMidiApi.MidiMessage
   | ToggleTrack Int
   | ToggleConfig
   | ReceiveMidiInEvent MidiInEvent
@@ -136,19 +135,22 @@ update msg model =
       }, Cmd.none )
 
     Start currentTime ->
-      ( { model
-          | startTime =
-              if model.currentTime > 0 then
-                currentTime - (model.currentTime - model.startTime)
-              else
-                currentTime
-          , currentTime = currentTime
-          , playing = True
-          , futureNotes = prepareFutureNotes (get .midi model)
-        }
-      , start ()
-      )
-        |> andThen (update (Tick currentTime))
+      let
+        startTime =
+          if model.currentTime > 0 then
+            currentTime - (model.currentTime - model.startTime)
+          else
+            currentTime
+      in
+        ( { model
+            | startTime = startTime
+            , currentTime = currentTime
+            , playing = True
+            , futureNotes = prepareFutureNotes (currentTime - startTime) (get .midi model)
+          }
+        , start ()
+        )
+          |> andThen (update (Tick currentTime))
 
     Stop ->
       ( { model
@@ -161,7 +163,7 @@ update msg model =
       let
         (futureNotes, cmd) =
           sendNotes
-            (get .midi model).timeBase
+            (get .midi model)
             model.startTime
             currentTime
             model.futureNotes
@@ -194,19 +196,6 @@ update msg model =
       , Cmd.none
       )
 
-    Send trackIndex message ->
-      ( model
-      , if model.playing then
-          model.midi
-            |> Maybe.map .tracks
-            |> Maybe.andThen (List.drop trackIndex >> List.head)
-            |> Maybe.andThen .portId
-            |> Maybe.map (\portId -> WebMidiApi.send (MidiOutEvent portId message 0))
-            |> Maybe.withDefault Cmd.none
-        else
-          Cmd.none
-      )
-
     ToggleTrack index ->
       ( { model | midi = Just (Midi.toggleVisibility index <| get .midi model) }
       , Cmd.none
@@ -221,35 +210,55 @@ update msg model =
       (model, Cmd.none)
 
 
-prepareFutureNotes : Midi -> List (Detailed Note)
-prepareFutureNotes midi =
+prepareFutureNotes : Time -> Midi -> List (Detailed Note)
+prepareFutureNotes time midi =
   midi.tracks
     |> List.indexedMap (,)
     |> List.concatMap (\(index, track) -> List.map (Midi.addDetails index track.channel) track.notes )
     |> List.sortBy .position
+    |> dropWhile (\note -> Midi.positionToTime midi.timeBase note.position < time)
 
 
-sendNotes : Int -> Time -> Time -> List (Detailed Note) -> (List (Detailed Note), Cmd Msg)
-sendNotes timeBase startTime currentTime futureNotes =
+dropWhile : (a -> Bool) -> List a -> List a
+dropWhile f list =
+  case list of
+    [] -> []
+    x :: xs ->
+      if f x then
+        dropWhile f xs
+      else
+        list
+
+
+sendNotes : Midi -> Time -> Time -> List (Detailed Note) -> (List (Detailed Note), Cmd Msg)
+sendNotes midi startTime currentTime futureNotes =
   let
     time =
       currentTime - startTime
 
     (newNotes, newFutureNotes) =
       splitWhile
-        (\note -> Midi.positionToTime timeBase note.position < time + 1000.0)
+        (\note -> Midi.positionToTime midi.timeBase note.position < time + 1000.0)
         []
         futureNotes
 
     cmd =
       newNotes
-        |> List.map (\note -> (Basics.max 0 (Midi.positionToTime timeBase note.position - time), note))
-        |> List.concatMap (\(after, note) ->
-            [ Process.sleep after |> Task.perform (\_ -> Send note.track [ 0x90 + note.channel, note.note, note.velocity ])
-            , Process.sleep (after + Midi.positionToTime timeBase note.length) |> Task.perform (\_ -> Send note.track [ 0x80 + note.channel, note.note, 0 ])
+        |> List.filterMap (\note ->
+          midi.tracks
+            |> List.drop note.track
+            |> List.head
+            |> Maybe.andThen .portId
+            |> Maybe.map (\portId ->
+              (portId, Basics.max 0.0 (Midi.positionToTime midi.timeBase note.position - time), note)
+            )
+          )
+        |> List.concatMap (\(portId, after, note) ->
+            [ MidiOutEvent portId [ 0x90 + note.channel, note.note, note.velocity ] after
+            , MidiOutEvent portId [ 0x80 + note.channel, note.note, 0 ] (after + Midi.positionToTime midi.timeBase note.length)
             ]
           )
-        |> Cmd.batch
+        |> WebMidiApi.send
   in
     (newFutureNotes, cmd)
 

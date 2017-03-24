@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Decode
+import Time exposing (Time)
 
 
 type alias MidiMessage =
@@ -13,7 +14,7 @@ type alias MidiMessage =
 type alias MidiOutEvent =
   { portId : String
   , message : MidiMessage
-  , at : Int
+  , at : Time
   }
 
 
@@ -37,7 +38,7 @@ type alias MidiAccess =
 
 port requestMidiAccess : () -> Cmd msg
 port receiveMidiAccess : (MidiAccess -> msg) -> Sub msg
-port send : MidiOutEvent -> Cmd msg
+port send : List MidiOutEvent -> Cmd msg
 port receive : (MidiInEvent -> msg) -> Sub msg
 
 
