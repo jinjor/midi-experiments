@@ -51,7 +51,7 @@ viewSelect toMsg midiPorts selectedMidiPort =
 
 viewOption : Maybe String -> MidiPort -> Html msg
 viewOption selectedMidiPort midiPorts =
-  option [ value midiPorts.id ] [ text midiPorts.name ]
+  option [ value midiPorts.id, selected (selectedMidiPort == Just midiPorts.id) ] [ text midiPorts.name ]
 
 
 onChange : (String -> msg) -> Html.Attribute msg

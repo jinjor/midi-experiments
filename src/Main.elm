@@ -183,9 +183,9 @@ update msg model =
           , midi =
               model.midi
                 |> Maybe.map (\midi ->
-                    List.head midiAccess.outputs
-                      |> Maybe.map (\midiOut -> Midi.setMidiOutToAllTracks midiOut.id midi)
-                      |> Maybe.withDefault midi
+                    List.range 0 (List.length midi.tracks - 1)
+                      |> List.map2 (,) midiAccess.outputs
+                      |> List.foldl (\(midiOut, index) midi -> Midi.setMidiOut index midiOut.id midi) midi
                   )
         }
       , Cmd.none

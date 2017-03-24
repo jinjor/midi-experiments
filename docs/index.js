@@ -11493,7 +11493,14 @@ var _user$project$WebMidiApi$viewOption = F2(
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$value(midiPorts.id),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$selected(
+						_elm_lang$core$Native_Utils.eq(
+							selectedMidiPort,
+							_elm_lang$core$Maybe$Just(midiPorts.id))),
+					_1: {ctor: '[]'}
+				}
 			},
 			{
 				ctor: '::',
@@ -12262,7 +12269,7 @@ var _user$project$Main$sendNotes = F4(
 										}
 									}
 								},
-								(_p5 + A2(_user$project$Midi$positionToTime, midi.timeBase, _p6.length)) - 20),
+								_p5 + A2(_user$project$Midi$positionToTime, midi.timeBase, _p6.length)),
 							_1: {ctor: '[]'}
 						}
 					};
@@ -12607,26 +12614,36 @@ var _user$project$Main$update = F2(
 					_1: A2(_elm_lang$core$Task$perform, _p19._0, _elm_lang$core$Time$now)
 				};
 			case 'ReceiveMidiAccess':
-				var _p26 = _p19._0;
+				var _p28 = _p19._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							midiIns: _p26.inputs,
-							midiOuts: _p26.outputs,
+							midiIns: _p28.inputs,
+							midiOuts: _p28.outputs,
 							midi: A2(
 								_elm_lang$core$Maybe$map,
 								function (midi) {
-									return A2(
-										_elm_lang$core$Maybe$withDefault,
+									return A3(
+										_elm_lang$core$List$foldl,
+										F2(
+											function (_p26, midi) {
+												var _p27 = _p26;
+												return A3(_user$project$Midi$setMidiOut, _p27._1, _p27._0.id, midi);
+											}),
 										midi,
-										A2(
-											_elm_lang$core$Maybe$map,
-											function (midiOut) {
-												return A2(_user$project$Midi$setMidiOutToAllTracks, midiOut.id, midi);
-											},
-											_elm_lang$core$List$head(_p26.outputs)));
+										A3(
+											_elm_lang$core$List$map2,
+											F2(
+												function (v0, v1) {
+													return {ctor: '_Tuple2', _0: v0, _1: v1};
+												}),
+											_p28.outputs,
+											A2(
+												_elm_lang$core$List$range,
+												0,
+												_elm_lang$core$List$length(midi.tracks) - 1)));
 								},
 								model.midi)
 						}),
@@ -12706,8 +12723,8 @@ var _user$project$Main$view = function (model) {
 				_1: {
 					ctor: '::',
 					_0: function () {
-						var _p27 = model.midi;
-						if (_p27.ctor === 'Just') {
+						var _p29 = model.midi;
+						if (_p29.ctor === 'Just') {
 							return A6(
 								_user$project$MidiPlayer$view,
 								{
@@ -12722,7 +12739,7 @@ var _user$project$Main$view = function (model) {
 								model.midiOuts,
 								model.playing,
 								model.currentTime - model.startTime,
-								_p27._0);
+								_p29._0);
 						} else {
 							return _elm_lang$html$Html$text('');
 						}
@@ -12730,11 +12747,11 @@ var _user$project$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p28 = model.error;
-							if (_p28.ctor === 'NoError') {
+							var _p30 = model.error;
+							if (_p30.ctor === 'NoError') {
 								return _elm_lang$html$Html$text('');
 							} else {
-								return A2(_user$project$ErrorFormatter$print, _p28._0, _p28._1);
+								return A2(_user$project$ErrorFormatter$print, _p30._0, _p30._1);
 							}
 						}(),
 						_1: {ctor: '[]'}
