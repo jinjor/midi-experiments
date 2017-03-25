@@ -63,8 +63,8 @@
           });
         });
     }
-
-    let app = Elm.Main.fullscreen();
+    let sample = location.search.substring(1) === 'sample' ? 'sample.mid' : null;
+    let app = Elm.Main.fullscreen(sample);
     app.ports.start.subscribe(() => {
 
     });

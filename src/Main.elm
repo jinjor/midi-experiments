@@ -22,9 +22,9 @@ port start : () -> Cmd msg
 port stop : () -> Cmd msg
 
 
-main : Program Never Model Msg
+main : Program (Maybe String) Model Msg
 main =
-  program
+  programWithFlags
     { init = init
     , update = update
     , subscriptions = subscriptions
@@ -87,10 +87,12 @@ type Msg
   | ReceiveMidiInEvent MidiInEvent
 
 
-init : (Model, Cmd Msg)
-init =
+init : Maybe String -> (Model, Cmd Msg)
+init midiFile =
   ( Model Nothing False 0 0 [] [] [] Nothing False NoError
-  , WebMidiApi.requestMidiAccess ()
+  , midiFile
+      |> Maybe.map (\file -> Task.attempt ReadBuffer (File.fetchArrayBuffer file))
+      |> Maybe.withDefault Cmd.none
   )
 
 
@@ -299,7 +301,7 @@ view model =
   div []
     [ h2 [] [ text "MIDI Player" ]
     , fileLoadButton "audio/mid" GotFile
-    , button [ onClick LoadMidi ] [ text "Load Sample" ]
+    -- , button [ onClick LoadMidi ] [ text "Load Sample" ]
     , case model.midi of
         Just midi ->
           MidiPlayer.view

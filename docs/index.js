@@ -12486,15 +12486,6 @@ var _user$project$Main$DecodeError = F2(
 		return {ctor: 'DecodeError', _0: a, _1: b};
 	});
 var _user$project$Main$NoError = {ctor: 'NoError'};
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: _user$project$Main$Model(_elm_lang$core$Maybe$Nothing)(false)(0)(0)(
-		{ctor: '[]'})(
-		{ctor: '[]'})(
-		{ctor: '[]'})(_elm_lang$core$Maybe$Nothing)(false)(_user$project$Main$NoError),
-	_1: _user$project$WebMidiApi$requestMidiAccess(
-		{ctor: '_Tuple0'})
-};
 var _user$project$Main$ReceiveMidiInEvent = function (a) {
 	return {ctor: 'ReceiveMidiInEvent', _0: a};
 };
@@ -12538,6 +12529,27 @@ var _user$project$Main$Start = function (a) {
 var _user$project$Main$Back = {ctor: 'Back'};
 var _user$project$Main$ReadBuffer = function (a) {
 	return {ctor: 'ReadBuffer', _0: a};
+};
+var _user$project$Main$init = function (midiFile) {
+	return {
+		ctor: '_Tuple2',
+		_0: _user$project$Main$Model(_elm_lang$core$Maybe$Nothing)(false)(0)(0)(
+			{ctor: '[]'})(
+			{ctor: '[]'})(
+			{ctor: '[]'})(_elm_lang$core$Maybe$Nothing)(false)(_user$project$Main$NoError),
+		_1: A2(
+			_elm_lang$core$Maybe$withDefault,
+			_elm_lang$core$Platform_Cmd$none,
+			A2(
+				_elm_lang$core$Maybe$map,
+				function (file) {
+					return A2(
+						_elm_lang$core$Task$attempt,
+						_user$project$Main$ReadBuffer,
+						_user$project$BinaryDecoder_File$fetchArrayBuffer(file));
+				},
+				midiFile))
+	};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
@@ -12595,8 +12607,8 @@ var _user$project$Main$update = F2(
 					return _elm_lang$core$Native_Utils.crashCase(
 						'Main',
 						{
-							start: {line: 108, column: 3},
-							end: {line: 216, column: 24}
+							start: {line: 110, column: 3},
+							end: {line: 218, column: 24}
 						},
 						_p19)(
 						A2(_elm_lang$core$Basics_ops['++'], 'failed to read arrayBuffer: ', _p19._0._0));
@@ -12784,66 +12796,61 @@ var _user$project$Main$view = function (model) {
 				_0: A2(_user$project$Main$fileLoadButton, 'audio/mid', _user$project$Main$GotFile),
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$button,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$LoadMidi),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text('Load Sample'),
-							_1: {ctor: '[]'}
-						}),
+					_0: function () {
+						var _p29 = model.midi;
+						if (_p29.ctor === 'Just') {
+							return A6(
+								_user$project$MidiPlayer$view,
+								{
+									onBack: _user$project$Main$Back,
+									onStart: _user$project$Main$Timed(_user$project$Main$Start),
+									onStop: _user$project$Main$Stop,
+									onToggleTrack: _user$project$Main$ToggleTrack,
+									onToggleConfig: _user$project$Main$ToggleConfig,
+									onSelectMidiOut: _user$project$Main$SelectMidiOut
+								},
+								model.showConfig,
+								model.midiOuts,
+								model.playing,
+								model.currentTime - model.startTime,
+								_p29._0);
+						} else {
+							return _elm_lang$html$Html$text('');
+						}
+					}(),
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p29 = model.midi;
-							if (_p29.ctor === 'Just') {
-								return A6(
-									_user$project$MidiPlayer$view,
-									{
-										onBack: _user$project$Main$Back,
-										onStart: _user$project$Main$Timed(_user$project$Main$Start),
-										onStop: _user$project$Main$Stop,
-										onToggleTrack: _user$project$Main$ToggleTrack,
-										onToggleConfig: _user$project$Main$ToggleConfig,
-										onSelectMidiOut: _user$project$Main$SelectMidiOut
-									},
-									model.showConfig,
-									model.midiOuts,
-									model.playing,
-									model.currentTime - model.startTime,
-									_p29._0);
-							} else {
+							var _p30 = model.error;
+							if (_p30.ctor === 'NoError') {
 								return _elm_lang$html$Html$text('');
+							} else {
+								return A2(_user$project$ErrorFormatter$print, _p30._0, _p30._1);
 							}
 						}(),
-						_1: {
-							ctor: '::',
-							_0: function () {
-								var _p30 = model.error;
-								if (_p30.ctor === 'NoError') {
-									return _elm_lang$html$Html$text('');
-								} else {
-									return A2(_user$project$ErrorFormatter$print, _p30._0, _p30._1);
-								}
-							}(),
-							_1: {ctor: '[]'}
-						}
+						_1: {ctor: '[]'}
 					}
 				}
 			}
 		});
 };
-var _user$project$Main$main = _elm_lang$html$Html$program(
+var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 	{
 		init: _user$project$Main$init,
 		update: _user$project$Main$update,
 		subscriptions: _user$project$Main$subscriptions,
 		view: _elm_lang$html$Html_Lazy$lazy(_user$project$Main$view)
-	})();
+	})(
+	_elm_lang$core$Json_Decode$oneOf(
+		{
+			ctor: '::',
+			_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string),
+				_1: {ctor: '[]'}
+			}
+		}));
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
