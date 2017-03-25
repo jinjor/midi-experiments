@@ -4,7 +4,7 @@ var SimpleInstruments = (function() {
   let destination = audioContext.destination;
 
   let indices = [];
-  for(let i = 0; i < 16; i++) {
+  for(let i = 1; i <= 16; i++) {
     indices.push(i);
   }
   var ports = indices.map(i => {
@@ -15,34 +15,37 @@ var SimpleInstruments = (function() {
 
     let noteState = [];
 
-    function noteOn(noteNum, velocity, at) {
-      velocity = 127;
+    function ensureOscillator(noteNum) {
       if(!noteState[noteNum]) {
         let frequency = 440 * Math.pow(Math.pow(2, 1 / 12), noteNum - 69);
 
         let gain = audioContext.createGain();
+        gain.gain.setValueAtTime(0, audioContext.currentTime);
         gain.connect(globalGain);
 
         let oscillator = audioContext.createOscillator();
         oscillator.type = 'square';
         oscillator.start = oscillator.start || oscillator.noteOn;
-        oscillator.frequency.setValueAtTime(frequency, at);
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
         oscillator.connect(gain);
-
-        oscillator.start(at);
+        oscillator.start();
 
         noteState[noteNum] = {
           gain: gain,
           oscillator: oscillator
         };
       }
-      noteState[noteNum].gain.gain.setValueAtTime(1.0 * (velocity / 127), at);
+    }
+
+    function noteOn(noteNum, velocity, at) {
+      ensureOscillator(noteNum);
+      velocity = 127;
+      noteState[noteNum].gain.gain.setValueAtTime(1.0 * (velocity / 128), at);
     }
 
     function noteOff(noteNum, at) {
-      if(noteState[noteNum]) {
-        noteState[noteNum].gain.gain.setValueAtTime(0, at);
-      }
+      ensureOscillator(noteNum);
+      noteState[noteNum].gain.gain.setValueAtTime(0, at);
     }
 
     function allSoundOff(at) {
@@ -51,17 +54,16 @@ var SimpleInstruments = (function() {
         if(n) {
           n.oscillator.frequency.cancelScheduledValues(at);
           n.gain.gain.cancelScheduledValues(at);
-          n.gain.gain.setValueAtTime(0, at + 0.001);
+          n.gain.gain.setValueAtTime(0, at);
           n.oscillator.stop(at);
           delete noteState[i];
         }
       }
     }
 
-    let id = i + '';
     return {
-      id: id,
-      name: 'Simple ' + id,
+      id: '#' + ("0" + i).slice(-2),
+      name: 'Simple ' + ("0" + i).slice(-2),
       send: (message, at) => {
         at = audioContext.currentTime + (at ? Math.max(at - performance.now(), 0) / 1000 : 0);
         if(message[0] === 0x80) {

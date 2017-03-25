@@ -19,24 +19,29 @@
     });
 
     function syncMidiAccess() {
-      return navigator.requestMIDIAccess()
-        .then(midiAccess => {
-          for(let output of midiAccess.outputs.values()) {
-            outputs[output.id] = output;
-          };
-          for(let input of midiAccess.inputs.values()) {
-            inputs[input.id] = input;
-            input.onmidimessage = e => {
-              var message = [];
-              for (let i = 0; i < e.data.length; i++) {
-                message.push(e.data[i]);
+      let load = navigator.requestMIDIAccess ?
+        navigator.requestMIDIAccess()
+          .then(midiAccess => {
+            for(let output of midiAccess.outputs.values()) {
+              outputs[output.id] = output;
+            };
+            for(let input of midiAccess.inputs.values()) {
+              inputs[input.id] = input;
+              input.onmidimessage = e => {
+                var message = [];
+                for (let i = 0; i < e.data.length; i++) {
+                  message.push(e.data[i]);
+                }
+                app.ports.receive.send({
+                  portId: input.id,
+                  message: message
+                });
               }
-              app.ports.receive.send({
-                portId: input.id,
-                message: message
-              });
-            }
-          };
+            };
+            return;
+          }) :
+          Promise.resolve();
+      return load.then(() => {
           // make ports objects immutable
           return Promise.resolve({
             inputs: Object.keys(inputs).map(id => {
@@ -46,7 +51,9 @@
                 name: input.name
               };
             }),
-            outputs: Object.keys(outputs).map(id => {
+            outputs: Object.keys(outputs).sort((id1, id2) => {
+              return (id1 < id2) ? -1 : (id1 > id2) ? 1 : 0
+            }).map(id => {
               let output = outputs[id];
               return {
                 id: output.id,
