@@ -73,7 +73,8 @@ see f data b =
 
 type Msg
   = GotFile File
-  | ReadBuffer (Result File.Error ArrayBuffer)
+  | LoadMidi
+  | ReadBuffer (Result String ArrayBuffer)
   | Back
   | Start Time
   | Stop
@@ -107,7 +108,12 @@ update msg model =
   case msg of
     GotFile file ->
       ( model
-      , Task.attempt ReadBuffer (File.readFileAsArrayBuffer file)
+      , Task.attempt ReadBuffer (File.readFileAsArrayBuffer file |> Task.mapError toString)
+      )
+
+    LoadMidi ->
+      ( model
+      , Task.attempt ReadBuffer (File.fetchArrayBuffer "sample.mid")
       )
 
     ReadBuffer (Ok buf) ->
@@ -124,8 +130,8 @@ update msg model =
              | error = DecodeError buf e
           }, Cmd.none)
 
-    ReadBuffer (Err e) ->
-      Debug.crash "failed to read arrayBuffer"
+    ReadBuffer (Err s) ->
+      Debug.crash ("failed to read arrayBuffer: " ++ s)
 
     Back ->
       ({ model
@@ -293,6 +299,7 @@ view model =
   div []
     [ h2 [] [ text "MIDI Player" ]
     , fileLoadButton "audio/mid" GotFile
+    , button [ onClick LoadMidi ] [ text "Load Sample" ]
     , case model.midi of
         Just midi ->
           MidiPlayer.view

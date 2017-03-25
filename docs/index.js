@@ -9645,6 +9645,22 @@ function readFileAsArrayBuffer(file) {
   });
 }
 
+function fetchArrayBuffer(url) {
+  return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback){
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'arraybuffer';
+    xhr.open('GET', url, true);
+    xhr.onload = function() {
+      callback(_elm_lang$core$Native_Scheduler.succeed(this.response));
+    };
+    xhr.onError = function(e) {
+      console.log(e);
+      callback(_elm_lang$core$Native_Scheduler.fail(Date.now()));
+    };
+    xhr.send();
+  });
+}
+
 function toDataView(buffer) {
   return new DataView(buffer);
 }
@@ -9715,6 +9731,7 @@ return {
   toFileList: toFileList,
   fileGet: F2(fileGet),
   readFileAsArrayBuffer: readFileAsArrayBuffer,
+  fetchArrayBuffer: fetchArrayBuffer,
 	toDataView: toDataView,
 	decodeInt: F2(decodeInt),
 	uint8: uint8,
@@ -9872,6 +9889,7 @@ var _user$project$BinaryDecoder_Byte$ArrayBuffer = {ctor: 'ArrayBuffer'};
 var _user$project$BinaryDecoder_Byte$DataView = {ctor: 'DataView'};
 var _user$project$BinaryDecoder_Byte$DecodeIntOption = {ctor: 'DecodeIntOption'};
 
+var _user$project$BinaryDecoder_File$fetchArrayBuffer = _user$project$Native_BinaryDecoder.fetchArrayBuffer;
 var _user$project$BinaryDecoder_File$readFileAsArrayBuffer = _user$project$Native_BinaryDecoder.readFileAsArrayBuffer;
 var _user$project$BinaryDecoder_File$fileGet = _user$project$Native_BinaryDecoder.fileGet;
 var _user$project$BinaryDecoder_File$toFileList = _user$project$Native_BinaryDecoder.toFileList;
@@ -12532,7 +12550,19 @@ var _user$project$Main$update = F2(
 					_1: A2(
 						_elm_lang$core$Task$attempt,
 						_user$project$Main$ReadBuffer,
-						_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p19._0))
+						A2(
+							_elm_lang$core$Task$mapError,
+							_elm_lang$core$Basics$toString,
+							_user$project$BinaryDecoder_File$readFileAsArrayBuffer(_p19._0)))
+				};
+			case 'LoadMidi':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(
+						_elm_lang$core$Task$attempt,
+						_user$project$Main$ReadBuffer,
+						_user$project$BinaryDecoder_File$fetchArrayBuffer('sample.mid'))
 				};
 			case 'ReadBuffer':
 				if (_p19._0.ctor === 'Ok') {
@@ -12565,10 +12595,11 @@ var _user$project$Main$update = F2(
 					return _elm_lang$core$Native_Utils.crashCase(
 						'Main',
 						{
-							start: {line: 107, column: 3},
-							end: {line: 210, column: 24}
+							start: {line: 108, column: 3},
+							end: {line: 216, column: 24}
 						},
-						_p19)('failed to read arrayBuffer');
+						_p19)(
+						A2(_elm_lang$core$Basics_ops['++'], 'failed to read arrayBuffer: ', _p19._0._0));
 				}
 			case 'Back':
 				return {
@@ -12730,6 +12761,7 @@ var _user$project$Main$update = F2(
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
+var _user$project$Main$LoadMidi = {ctor: 'LoadMidi'};
 var _user$project$Main$GotFile = function (a) {
 	return {ctor: 'GotFile', _0: a};
 };
@@ -12752,39 +12784,54 @@ var _user$project$Main$view = function (model) {
 				_0: A2(_user$project$Main$fileLoadButton, 'audio/mid', _user$project$Main$GotFile),
 				_1: {
 					ctor: '::',
-					_0: function () {
-						var _p29 = model.midi;
-						if (_p29.ctor === 'Just') {
-							return A6(
-								_user$project$MidiPlayer$view,
-								{
-									onBack: _user$project$Main$Back,
-									onStart: _user$project$Main$Timed(_user$project$Main$Start),
-									onStop: _user$project$Main$Stop,
-									onToggleTrack: _user$project$Main$ToggleTrack,
-									onToggleConfig: _user$project$Main$ToggleConfig,
-									onSelectMidiOut: _user$project$Main$SelectMidiOut
-								},
-								model.showConfig,
-								model.midiOuts,
-								model.playing,
-								model.currentTime - model.startTime,
-								_p29._0);
-						} else {
-							return _elm_lang$html$Html$text('');
-						}
-					}(),
+					_0: A2(
+						_elm_lang$html$Html$button,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$LoadMidi),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Load Sample'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p30 = model.error;
-							if (_p30.ctor === 'NoError') {
-								return _elm_lang$html$Html$text('');
+							var _p29 = model.midi;
+							if (_p29.ctor === 'Just') {
+								return A6(
+									_user$project$MidiPlayer$view,
+									{
+										onBack: _user$project$Main$Back,
+										onStart: _user$project$Main$Timed(_user$project$Main$Start),
+										onStop: _user$project$Main$Stop,
+										onToggleTrack: _user$project$Main$ToggleTrack,
+										onToggleConfig: _user$project$Main$ToggleConfig,
+										onSelectMidiOut: _user$project$Main$SelectMidiOut
+									},
+									model.showConfig,
+									model.midiOuts,
+									model.playing,
+									model.currentTime - model.startTime,
+									_p29._0);
 							} else {
-								return A2(_user$project$ErrorFormatter$print, _p30._0, _p30._1);
+								return _elm_lang$html$Html$text('');
 							}
 						}(),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: function () {
+								var _p30 = model.error;
+								if (_p30.ctor === 'NoError') {
+									return _elm_lang$html$Html$text('');
+								} else {
+									return A2(_user$project$ErrorFormatter$print, _p30._0, _p30._1);
+								}
+							}(),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
