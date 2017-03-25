@@ -11508,6 +11508,32 @@ var _user$project$WebMidiApi$viewOption = F2(
 				_1: {ctor: '[]'}
 			});
 	});
+var _user$project$WebMidiApi_ops = _user$project$WebMidiApi_ops || {};
+_user$project$WebMidiApi_ops['=>'] = F2(
+	function (v0, v1) {
+		return {ctor: '_Tuple2', _0: v0, _1: v1};
+	});
+var _user$project$WebMidiApi$selectStyles = {
+	ctor: '::',
+	_0: A2(_user$project$WebMidiApi_ops['=>'], '-webkit-background-clip', 'content-box'),
+	_1: {
+		ctor: '::',
+		_0: A2(_user$project$WebMidiApi_ops['=>'], 'height', '18px'),
+		_1: {
+			ctor: '::',
+			_0: A2(_user$project$WebMidiApi_ops['=>'], 'position', 'relative'),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$WebMidiApi_ops['=>'], 'top', '6px'),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$WebMidiApi_ops['=>'], 'margin-left', '7px'),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	}
+};
 var _user$project$WebMidiApi$viewSelect = F3(
 	function (toMsg, midiPorts, selectedMidiPort) {
 		return A2(
@@ -11515,7 +11541,11 @@ var _user$project$WebMidiApi$viewSelect = F3(
 			{
 				ctor: '::',
 				_0: _user$project$WebMidiApi$onChange(toMsg),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(_user$project$WebMidiApi$selectStyles),
+					_1: {ctor: '[]'}
+				}
 			},
 			A2(
 				_elm_lang$core$List$map,

@@ -45,8 +45,21 @@ port receive : (MidiInEvent -> msg) -> Sub msg
 viewSelect : (String -> msg) -> List MidiPort -> Maybe String -> Html msg
 viewSelect toMsg midiPorts selectedMidiPort =
   select
-    [ onChange toMsg ]
+    [ onChange toMsg, style selectStyles ]
     ( List.map (viewOption selectedMidiPort) midiPorts )
+
+
+(=>) = (,)
+
+
+selectStyles : List (String, String)
+selectStyles =
+  [ "-webkit-background-clip" => "content-box"
+  , "height" => "18px"
+  , "position" => "relative"
+  , "top" => "6px"
+  , "margin-left" => "7px"
+  ]
 
 
 viewOption : Maybe String -> MidiPort -> Html msg
