@@ -5,16 +5,6 @@ var SimpleInstruments = (function() {
   audioContext.createOscillator = audioContext.createOscillator || audioContext.createOscillatorNode;
   let destination = audioContext.destination;
 
-  // hack for iOS
-  window.addEventListener('touchstart', () => {
-    let buffer = audioContext.createBuffer(1,1,22050);
-    let source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(destination);
-    source.start = source.start || source.noteOn;
-    source.start();
-  });
-
   let indices = [];
   for(let i = 1; i <= 16; i++) {
     indices.push(i);
