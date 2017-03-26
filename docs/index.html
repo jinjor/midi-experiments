@@ -11,7 +11,14 @@
   <script src="index.js"></script>
 </head>
 <body>
+  <pre id="errors"></pre>
   <script>
+    window.onerror = (message, url, line) => {
+      document.getElementById('errors').textContent = message + '\n'
+        + url + '\n' + line;
+      return false;
+    };
+
     let outputs = {};
     let inputs = {};
 
@@ -62,6 +69,8 @@
               };
             })
           });
+        }).catch(e => {
+          document.getElementById('errors').textContent = e;
         });
     }
     let sample = location.search.substring(1) === 'sample' ? 'sample.mid' : null;
