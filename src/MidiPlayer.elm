@@ -41,10 +41,10 @@ view options showConfig midiOuts playing time midi =
     currentPosition =
       Midi.timeToPosition midi.timeBase time
   in
-    div [ HA.style [ "position" => "relative" ] ]
+    div [ HA.style [ "position" => "relative", "width" => "480px", "max-width" => "100%" ] ]
       [ midi.tracks
           |> List.map2 (viewTrack currentPosition) colors
-          |> svg (containerStyles currentPosition)
+          |> svg (svgAttributes currentPosition)
       , centerLine
       , lazy3 control options midi.tracks playing
       , if showConfig then lazy3 viewConfig options midiOuts midi.tracks else H.text ""
@@ -57,7 +57,7 @@ centerLine =
     [ HA.style
         [ "border-right" => "solid 1px #555"
         , "height" => "270px"
-        , "left" => "240px"
+        , "left" => "50%"
         , "top" => "0"
         , "position" => "absolute"
         ]
@@ -65,14 +65,14 @@ centerLine =
     []
 
 
-containerStyles : Int -> List (S.Attribute msg)
-containerStyles currentPosition =
+svgAttributes : Int -> List (S.Attribute msg)
+svgAttributes currentPosition =
   [ SA.width "10000"
   , SA.height "90"
   , viewBox (String.join " " <| List.map toString [currentPosition - 5000, 0, 10000, 90])
   , preserveAspectRatio "none"
   , HA.style
-      [ "width" => "480px"
+      [ "width" => "100%"
       , "height" => "270px"
       , "background-color" => "black"
       , "display" => "block"
@@ -94,6 +94,7 @@ control options tracks playing =
 controlStyles : List (String, String)
 controlStyles =
   [ "width" => "480px"
+  , "max-width" => "100%"
   , "height" => "30px"
   , "background-color" => "#301"
   , "display" => "flex"
@@ -206,6 +207,7 @@ configStyles =
   [ "padding" => "10px"
   , "box-sizing" => "border-box"
   , "width" => "480px"
+  , "max-width" => "100%"
   , "background-color" => "#301"
   , "box-shadow" => "inset rgba(0,0,0,0.4) 0px 4px 7px"
   ]

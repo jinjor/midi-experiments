@@ -11750,11 +11750,15 @@ var _user$project$MidiPlayer$configStyles = {
 			_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
 			_1: {
 				ctor: '::',
-				_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'max-width', '100%'),
 				_1: {
 					ctor: '::',
-					_0: A2(_user$project$MidiPlayer_ops['=>'], 'box-shadow', 'inset rgba(0,0,0,0.4) 0px 4px 7px'),
-					_1: {ctor: '[]'}
+					_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'box-shadow', 'inset rgba(0,0,0,0.4) 0px 4px 7px'),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		}
@@ -11961,19 +11965,23 @@ var _user$project$MidiPlayer$controlStyles = {
 	_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
 	_1: {
 		ctor: '::',
-		_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '30px'),
+		_0: A2(_user$project$MidiPlayer_ops['=>'], 'max-width', '100%'),
 		_1: {
 			ctor: '::',
-			_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+			_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '30px'),
 			_1: {
 				ctor: '::',
-				_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'flex'),
-				_1: {ctor: '[]'}
+				_0: A2(_user$project$MidiPlayer_ops['=>'], 'background-color', '#301'),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$MidiPlayer_ops['=>'], 'display', 'flex'),
+					_1: {ctor: '[]'}
+				}
 			}
 		}
 	}
 };
-var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
+var _user$project$MidiPlayer$svgAttributes = function (currentPosition) {
 	return {
 		ctor: '::',
 		_0: _elm_lang$svg$Svg_Attributes$width('10000'),
@@ -12014,7 +12022,7 @@ var _user$project$MidiPlayer$containerStyles = function (currentPosition) {
 						_0: _elm_lang$html$Html_Attributes$style(
 							{
 								ctor: '::',
-								_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '100%'),
 								_1: {
 									ctor: '::',
 									_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '270px'),
@@ -12049,7 +12057,7 @@ var _user$project$MidiPlayer$centerLine = A2(
 					_0: A2(_user$project$MidiPlayer_ops['=>'], 'height', '270px'),
 					_1: {
 						ctor: '::',
-						_0: A2(_user$project$MidiPlayer_ops['=>'], 'left', '240px'),
+						_0: A2(_user$project$MidiPlayer_ops['=>'], 'left', '50%'),
 						_1: {
 							ctor: '::',
 							_0: A2(_user$project$MidiPlayer_ops['=>'], 'top', '0'),
@@ -12175,7 +12183,15 @@ var _user$project$MidiPlayer$view = F6(
 					{
 						ctor: '::',
 						_0: A2(_user$project$MidiPlayer_ops['=>'], 'position', 'relative'),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(_user$project$MidiPlayer_ops['=>'], 'width', '480px'),
+							_1: {
+								ctor: '::',
+								_0: A2(_user$project$MidiPlayer_ops['=>'], 'max-width', '100%'),
+								_1: {ctor: '[]'}
+							}
+						}
 					}),
 				_1: {ctor: '[]'}
 			},
@@ -12183,7 +12199,7 @@ var _user$project$MidiPlayer$view = F6(
 				ctor: '::',
 				_0: A2(
 					_elm_lang$svg$Svg$svg,
-					_user$project$MidiPlayer$containerStyles(currentPosition),
+					_user$project$MidiPlayer$svgAttributes(currentPosition),
 					A3(
 						_elm_lang$core$List$map2,
 						_user$project$MidiPlayer$viewTrack(currentPosition),
