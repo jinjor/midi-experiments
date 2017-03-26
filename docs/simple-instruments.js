@@ -1,6 +1,8 @@
 var SimpleInstruments = (function() {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   let audioContext = new AudioContext();
+  audioContext.createGain = audioContext.createGain || audioContext.createGainNode;
+  audioContext.createOscillator = audioContext.createOscillator || audioContext.createOscillatorNode;
   let destination = audioContext.destination;
 
   let indices = [];
@@ -24,8 +26,8 @@ var SimpleInstruments = (function() {
         gain.connect(globalGain);
 
         let oscillator = audioContext.createOscillator();
-        oscillator.type = 'square';
         oscillator.start = oscillator.start || oscillator.noteOn;
+        oscillator.type = 'square';
         oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
         oscillator.connect(gain);
         oscillator.start();
